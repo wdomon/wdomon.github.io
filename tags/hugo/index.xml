@@ -9,6 +9,12 @@ data-flex-grow="500"
 data-flex-basis="1201px"
 >&lt;/p>
 &lt;p>After creating the post, update/save the markdown file then commit and push to the Github repo.&lt;/p>
-&lt;p>&lt;img src="https://wdomon.github.io/hugo-new-post-commit.png"
+&lt;p>&lt;img src="https://wdomon.github.io/post/hugo-new-post/hugo-new-post-commit.png"
+width="1639"
+height="1060"
+srcset="https://wdomon.github.io/post/hugo-new-post/hugo-new-post-commit_hua1bf7a15b475eb4a82942c61d1ee3214_93374_480x0_resize_box_3.png 480w, https://wdomon.github.io/post/hugo-new-post/hugo-new-post-commit_hua1bf7a15b475eb4a82942c61d1ee3214_93374_1024x0_resize_box_3.png 1024w"
 loading="lazy"
+class="gallery-image"
+data-flex-grow="154"
+data-flex-basis="371px"
 >&lt;/p></description></item></channel></rss>

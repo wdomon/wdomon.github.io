@@ -9,8 +9,14 @@ data-flex-grow="500"
 data-flex-basis="1201px"
 >&lt;/p>
 &lt;p>After creating the post, update/save the markdown file then commit and push to the Github repo.&lt;/p>
-&lt;p>&lt;img src="https://wdomon.github.io/hugo-new-post-commit.png"
+&lt;p>&lt;img src="https://wdomon.github.io/post/hugo-new-post/hugo-new-post-commit.png"
+width="1639"
+height="1060"
+srcset="https://wdomon.github.io/post/hugo-new-post/hugo-new-post-commit_hua1bf7a15b475eb4a82942c61d1ee3214_93374_480x0_resize_box_3.png 480w, https://wdomon.github.io/post/hugo-new-post/hugo-new-post-commit_hua1bf7a15b475eb4a82942c61d1ee3214_93374_1024x0_resize_box_3.png 1024w"
 loading="lazy"
+class="gallery-image"
+data-flex-grow="154"
+data-flex-basis="371px"
 >&lt;/p></description></item><item><title>Block an IP address on Azure App Service</title><link>https://wdomon.github.io/post/azure-app-service-block-ip/</link><pubDate>Sat, 27 Aug 2022 18:01:14 -0700</pubDate><guid>https://wdomon.github.io/post/azure-app-service-block-ip/</guid><description>&lt;p>If malicious/suspicious user activity (scanning, auth attempts, etc.) is detected on an Azure App Service, blocking the source IP is often the quickest way to prevent further activity. To do so, it&amp;rsquo;s as easy as adding a Network rule to the app service that blocks that IP/range. Access the app service in question and click the &amp;ldquo;Networking&amp;rdquo; navigation blade.&lt;/p>
 &lt;p>Click &amp;ldquo;Access restriction&amp;rdquo;&lt;br>
 &lt;img src="https://wdomon.github.io/post/azure-app-service-block-ip/access-restriction.png"
