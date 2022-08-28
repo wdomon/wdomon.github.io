@@ -1,1 +1,13 @@
-baseurl: http://examplesite.org/
+baseurl: https://wdomon.github.io/braindump/
+languageCode: en-us
+theme: stack
+title: Brain Dump
+
+params:
+    sidebar:
+        compact: false
+        emoji: 💩
+        avatar:
+            enabled: true
+            local: true
+            src: img/brain_logo.png
