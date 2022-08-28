@@ -7,7 +7,17 @@ params:
     sidebar:
         compact: false
         emoji: 💩
+        subtitle: A mostly organized dump of my brain.
         avatar:
             enabled: true
             local: true
             src: img/brain_logo.png
+
+menu: 
+    main:
+        - identifier: home
+          url: https://github.com/wdomon
+          weight: -100
+          params:
+              icon: github
+              newtab: true
