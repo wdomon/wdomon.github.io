@@ -1,4 +1,17 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Posts on Brain Dump</title><link>https://wdomon.github.io/post/</link><description>Recent content in Posts on Brain Dump</description><generator>Hugo -- gohugo.io</generator><language>en-us</language><lastBuildDate>Sat, 27 Aug 2022 18:01:14 -0700</lastBuildDate><atom:link href="https://wdomon.github.io/post/index.xml" rel="self" type="application/rss+xml"/><item><title>Block an IP address on Azure App Service</title><link>https://wdomon.github.io/post/azure-app-service-block-ip/</link><pubDate>Sat, 27 Aug 2022 18:01:14 -0700</pubDate><guid>https://wdomon.github.io/post/azure-app-service-block-ip/</guid><description>&lt;p>If malicious/suspicious user activity (scanning, auth attempts, etc.) is detected on an Azure App Service, blocking the source IP is often the quickest way to prevent further activity. To do so, it&amp;rsquo;s as easy as adding a Network rule to the app service that blocks that IP/range. Access the app service in question and click the &amp;ldquo;Networking&amp;rdquo; navigation blade.&lt;/p>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Posts on Brain Dump</title><link>https://wdomon.github.io/post/</link><description>Recent content in Posts on Brain Dump</description><generator>Hugo -- gohugo.io</generator><language>en-us</language><lastBuildDate>Sat, 27 Aug 2022 18:46:26 -0700</lastBuildDate><atom:link href="https://wdomon.github.io/post/index.xml" rel="self" type="application/rss+xml"/><item><title>Create a new post in Hugo</title><link>https://wdomon.github.io/post/hugo-new-post/</link><pubDate>Sat, 27 Aug 2022 18:46:26 -0700</pubDate><guid>https://wdomon.github.io/post/hugo-new-post/</guid><description>&lt;p>Creating a new post using hugo is literally a one-liner. Just make sure to set the path inside the &amp;lsquo;post&amp;rsquo; folder.&lt;/p>
+&lt;p>&lt;img src="https://wdomon.github.io/post/hugo-new-post/hugo-new-post.png"
+width="806"
+height="161"
+srcset="https://wdomon.github.io/post/hugo-new-post/hugo-new-post_hu37cb35cc190574a2b05d30e3d9944e31_9913_480x0_resize_box_3.png 480w, https://wdomon.github.io/post/hugo-new-post/hugo-new-post_hu37cb35cc190574a2b05d30e3d9944e31_9913_1024x0_resize_box_3.png 1024w"
+loading="lazy"
+class="gallery-image"
+data-flex-grow="500"
+data-flex-basis="1201px"
+>&lt;/p>
+&lt;p>After creating the post, update/save the markdown file then commit and push to the Github repo.&lt;/p>
+&lt;p>&lt;img src="https://wdomon.github.io/hugo-new-post-commit.png"
+loading="lazy"
+>&lt;/p></description></item><item><title>Block an IP address on Azure App Service</title><link>https://wdomon.github.io/post/azure-app-service-block-ip/</link><pubDate>Sat, 27 Aug 2022 18:01:14 -0700</pubDate><guid>https://wdomon.github.io/post/azure-app-service-block-ip/</guid><description>&lt;p>If malicious/suspicious user activity (scanning, auth attempts, etc.) is detected on an Azure App Service, blocking the source IP is often the quickest way to prevent further activity. To do so, it&amp;rsquo;s as easy as adding a Network rule to the app service that blocks that IP/range. Access the app service in question and click the &amp;ldquo;Networking&amp;rdquo; navigation blade.&lt;/p>
 &lt;p>Click &amp;ldquo;Access restriction&amp;rdquo;&lt;br>
 &lt;img src="https://wdomon.github.io/post/azure-app-service-block-ip/access-restriction.png"
 width="377"
