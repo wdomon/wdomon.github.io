@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Microsoft 365 on Brain Dump</title><link>https://wdomon.github.io/tags/microsoft-365/</link><description>Recent content in Microsoft 365 on Brain Dump</description><generator>Hugo -- gohugo.io</generator><language>en-us</language><lastBuildDate>Mon, 29 Aug 2022 16:03:16 -0700</lastBuildDate><atom:link href="https://wdomon.github.io/tags/microsoft-365/index.xml" rel="self" type="application/rss+xml"/><item><title>Set a Sharepoint Online site to Read-Only or Disabled</title><link>https://wdomon.github.io/post/sharepoint-online-site-lock/</link><pubDate>Mon, 29 Aug 2022 16:03:16 -0700</pubDate><guid>https://wdomon.github.io/post/sharepoint-online-site-lock/</guid><description>&lt;p>Sharepoint Online (SPO) management tools provided by Microsoft leave something to be desired, to say the least. The admin center web GUI is missing an enormous amount of functionality and the Powershell module is pretty unintuitive. While I don&amp;rsquo;t use a ton of SPO, I recently migrated a site to a different M365 tenant and had the need to set that site to a Read-Only state for a period of time (to ensure we had something to reference in the event someone reported that something was missing) and then disable access to it entirely. Using the SPO Powershell Module, you can quickly and easily change the &lt;code>LockState&lt;/code> attribute of an SPO site.&lt;/p>
+&lt;p>First connect to SPO using the administrative URL of your M365 tenant using the &lt;a class="link" href="https://docs.microsoft.com/en-us/powershell/module/sharepoint-online/connect-sposervice?view=sharepoint-ps" target="_blank" rel="noopener"
+>Connect-SPOService&lt;/a> command. The administrtive URL you connect to is always the same format:&lt;br>
+&lt;code>Connect-SPOService -Url https://tenantname-admin.sharepoint.com&lt;/code>&lt;/p>
+&lt;p>&lt;img src="https://wdomon.github.io/post/sharepoint-online-site-lock/spo-connect.png"
+width="885"
+height="383"
+srcset="https://wdomon.github.io/post/sharepoint-online-site-lock/spo-connect_huc44afd70925cd8ce2870cdc88ba3cc18_49211_480x0_resize_box_3.png 480w, https://wdomon.github.io/post/sharepoint-online-site-lock/spo-connect_huc44afd70925cd8ce2870cdc88ba3cc18_49211_1024x0_resize_box_3.png 1024w"
+loading="lazy"
+class="gallery-image"
+data-flex-grow="231"
+data-flex-basis="554px"
+>&lt;/p>
+&lt;p>Once connected, set the &lt;code>LockState&lt;/code> property of the site accordingly using the &lt;a class="link" href="https://docs.microsoft.com/en-us/powershell/module/sharepoint-online/set-sposite?view=sharepoint-ps" target="_blank" rel="noopener"
+>Set-SPOSite&lt;/a> command. This property can accept three values:&lt;/p>
+&lt;ul>
+&lt;li>&lt;code>Unlocked&lt;/code> - Default state, site is available&lt;/li>
+&lt;li>&lt;code>ReadOnly&lt;/code> - Site is in a view only state so no changes can be made. A message appears at the top of the site indicating that the administrator is preventing any changes from being made to this site. Permissions of folders can be viewed but whether or not those permissions are inheriting&lt;/li>
+&lt;li>&lt;code>NoAccess&lt;/code> - Disables the site entirely. If the tenant has a value for &lt;code>NoAccessRedirectUrl&lt;/code> then all traffic will be forward to that URL. If that value is not set, then a 403 error will be returned for all visitors of the site.&lt;/li>
+&lt;/ul>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-powershell" data-lang="powershell">&lt;span style="display:flex;">&lt;span>Connect-SPOService -Url &lt;span style="color:#e6db74">&amp;#34;https://tenantname-admin.sharepoint.com&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Set-SPOSite -Identity &lt;span style="color:#e6db74">&amp;#34;https://tenantname.sharepoint.com/sites/Company&amp;#34;&lt;/span> -LockState &lt;span style="color:#e6db74">&amp;#34;ReadOnly&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div></description></item></channel></rss>
