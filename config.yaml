@@ -7,17 +7,37 @@ params:
     sidebar:
         compact: false
         emoji: 💩
-        subtitle: A mostly organized dump of my brain.
+        subtitle: A mostly organized brain dump
         avatar:
             enabled: true
             local: true
             src: img/brain_logo.png
 
 menu: 
+    social:
+        - identifier: github
+          name: GitHub
+          url: https://github.com/wdomon
+          params:
+                icon: github
+        - identifier: linkedin
+          name: LinkedIn
+          url: https://www.linkedin.com/in/wes-domon-0102ab80/
+          params:
+                icon: linkedin
     main:
         - identifier: home
-          url: https://github.com/wdomon
+          name: Home
+          url: /
           weight: -100
           params:
-              icon: github
-              newtab: true
+              icon: home
+              newtab: false
+        - identifider: about
+          name: About
+          url: /about/
+          weight: 1
+          params:
+              icon: user
+              newtab: false
+              

@@ -6,7 +6,7 @@ tags: [
 ]
 ---
 
-Creating a new post using hugo is literally a one-liner. Just make sure to set the path inside the 'post' folder.
+Creating a new post using [hugo](https://gohugo.io/) is literally a one-liner. Just make sure to set the path inside the 'post' folder.
 
 ![](hugo-new-post.png)
 
