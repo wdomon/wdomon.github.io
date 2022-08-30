@@ -5,7 +5,6 @@ tags: [
     Sharepoint Online,
     Microsoft 365
 ]
-image: spo-connect.png
 ---
 
 Sharepoint Online (SPO) management tools provided by Microsoft leave something to be desired, to say the least. The admin center web GUI is missing an enormous amount of functionality and the Powershell module is pretty unintuitive. While I don't use a ton of SPO, I recently migrated a site to a different M365 tenant and had the need to set that site to a Read-Only state for a period of time (to ensure we had something to reference in the event someone reported that something was missing) and then disable access to it entirely. Using the SPO Powershell Module, you can quickly and easily change the `LockState` attribute of an SPO site.
