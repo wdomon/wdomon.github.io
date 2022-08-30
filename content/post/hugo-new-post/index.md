@@ -4,6 +4,7 @@ date: 2022-08-27T18:46:26-07:00
 tags: [
     "hugo"
 ]
+image: hugo-logo.png
 ---
 
 Creating a new post using [hugo](https://gohugo.io/) is literally a one-liner. Just make sure to set the path inside the 'post' folder.
