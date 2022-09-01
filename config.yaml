@@ -2,7 +2,6 @@ baseurl: https://www.adminbraindump.com
 languageCode: en-us
 theme: stack
 title: Brain Dump
-enableRobotsTXT: true
 
 params:
     sidebar:
