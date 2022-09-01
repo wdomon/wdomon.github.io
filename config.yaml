@@ -4,6 +4,7 @@ theme: stack
 title: Brain Dump
 enableRobotsTXT: true
 
+
 params:
     sidebar:
         compact: false
