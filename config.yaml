@@ -14,6 +14,9 @@ params:
             enabled: true
             local: true
             src: img/brain_logo.png
+    widgets:
+        homepage:
+            - type: search
 
 menu: 
     social:
@@ -35,11 +38,10 @@ menu:
           params:
               icon: home
               newtab: false
-        - identifider: about
+        - identifier: about
           name: About
           url: /about/
           weight: 1
           params:
               icon: user
-              newtab: false
-              
+              newtab: false              

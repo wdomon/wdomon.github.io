@@ -1,5 +1,5 @@
 ---
-title: "About"
+title: About
 description: Wes Domon, IT Systems and Cloud Engineer
 date: 2022-08-29
 ---
