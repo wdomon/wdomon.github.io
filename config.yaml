@@ -1,7 +1,7 @@
 baseurl: https://www.adminbraindump.com
 languageCode: en-us
 theme: stack
-title: Brain Dump
+title: Admin Brain Dump
 enableRobotsTXT: true
 
 
@@ -17,6 +17,12 @@ params:
     widgets:
         homepage:
             - type: search
+            - type: tag-cloud
+              params:
+                    limit: 10
+    colorScheme:
+        toggle: true
+        default: dark
 
 menu: 
     social:
