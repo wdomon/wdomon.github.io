@@ -1,4 +1,22 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Azure on Brain Dump</title><link>https://www.adminbraindump.com/tags/azure/</link><description>Recent content in Azure on Brain Dump</description><generator>Hugo -- gohugo.io</generator><language>en-us</language><lastBuildDate>Sat, 27 Aug 2022 18:01:14 -0700</lastBuildDate><atom:link href="https://www.adminbraindump.com/tags/azure/index.xml" rel="self" type="application/rss+xml"/><item><title>Block an IP address on Azure App Service</title><link>https://www.adminbraindump.com/post/azure-app-service-block-ip/</link><pubDate>Sat, 27 Aug 2022 18:01:14 -0700</pubDate><guid>https://www.adminbraindump.com/post/azure-app-service-block-ip/</guid><description>&lt;p>If malicious/suspicious user activity (scanning, auth attempts, etc.) is detected on an Azure App Service, blocking the source IP is often the quickest way to prevent further activity. To do so, it&amp;rsquo;s as easy as adding a Network rule to the app service that blocks that IP/range. Access the app service in question and click the &amp;ldquo;Networking&amp;rdquo; navigation blade.&lt;/p>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Azure on Admin Brain Dump</title><link>https://www.adminbraindump.com/tags/azure/</link><description>Recent content in Azure on Admin Brain Dump</description><generator>Hugo -- gohugo.io</generator><language>en-us</language><lastBuildDate>Sat, 27 Aug 2022 18:01:14 -0700</lastBuildDate><atom:link href="https://www.adminbraindump.com/tags/azure/index.xml" rel="self" type="application/rss+xml"/><item><title>Block an IP address on Azure App Service</title><link>https://www.adminbraindump.com/post/azure-app-service-block-ip/</link><pubDate>Sat, 27 Aug 2022 18:01:14 -0700</pubDate><guid>https://www.adminbraindump.com/post/azure-app-service-block-ip/</guid><description>&lt;p>If malicious/suspicious user activity (scanning, auth attempts, etc.) is detected on an Azure App Service, blocking the source IP is often the quickest way to prevent further activity. To do so, it&amp;rsquo;s as easy as adding a Network rule to the app service that blocks that IP/range.&lt;/p>
+&lt;h3 id="requirements">Requirements&lt;/h3>
+&lt;ul>
+&lt;li>&lt;a class="link" href="https://docs.microsoft.com/en-us/powershell/azure/install-az-ps?view=azps-8.2.0" target="_blank" rel="noopener"
+>Azure Az Powershell Module&lt;/a>&lt;/li>
+&lt;/ul>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-powershell" data-lang="powershell">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#Backticks for formatting&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Add-AzWebAppAccessRestrictionRule `
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>-ResourceGroupName &lt;span style="color:#e6db74">&amp;#34;ResourceGroup&amp;#34;&lt;/span> `
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>-WebAppName &lt;span style="color:#e6db74">&amp;#34;AppName&amp;#34;&lt;/span> `
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>-Name &lt;span style="color:#e6db74">&amp;#34;Ip example rule&amp;#34;&lt;/span> ` &lt;span style="color:#75715e">#Friendly name of rule&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>-Priority 100 ` &lt;span style="color:#75715e">#If this app is publicly available, make sure this priority is lower than the priority of the 0.0.0.0/0 rule&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>-Action Deny `
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>-IpAddress 122.133.144.155/32
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;hr>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-powershell" data-lang="powershell">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#Same command one-liner&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Add-AzWebAppAccessRestrictionRule -ResourceGroupName &lt;span style="color:#e6db74">&amp;#34;ResourceGroup&amp;#34;&lt;/span> -WebAppName &lt;span style="color:#e6db74">&amp;#34;AppName&amp;#34;&lt;/span> -Name &lt;span style="color:#e6db74">&amp;#34;Ip example rule&amp;#34;&lt;/span> -Priority 100 -Action Deny -IpAddress 122.133.144.155/32
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="doing-things-the-old-way">Doing things the old way&lt;/h2>
+&lt;p>Access the app service in question and click the &amp;ldquo;Networking&amp;rdquo; navigation blade on the left.&lt;/p>
 &lt;p>Click &amp;ldquo;Access restriction&amp;rdquo;&lt;br>
 &lt;img src="https://www.adminbraindump.com/post/azure-app-service-block-ip/access-restriction.png"
 width="377"
@@ -19,7 +37,7 @@ class="gallery-image"
 data-flex-grow="71"
 data-flex-basis="171px"
 >&lt;/p>
-&lt;p>Give the rule a name, change the toggle to &amp;ldquo;Deny,&amp;rdquo; set a priority that is higher than the &amp;ldquo;Allow All&amp;rdquo; rule that exists (assuming this is a public app service), add the CIDR notation of the IP address in question, and click the &amp;ldquo;Add rule&amp;rdquo; button to save the changes. All traffic from that IP address will immediately be blocked.&lt;br>
+&lt;p>Give the rule a name, change the toggle to &amp;ldquo;Deny,&amp;rdquo; set a priority for the rule (if this is a publicly available app service, make sure to set the new rule with a lower priority than the &amp;ldquo;Allow All&amp;rdquo; rule that exists (0.0.0.0/0), add the CIDR notation of the IP address in question, and click the &amp;ldquo;Add rule&amp;rdquo; button to save the changes. All traffic from that IP address will immediately be blocked.&lt;br>
 &lt;img src="https://www.adminbraindump.com/post/azure-app-service-block-ip/rule-settings.png"
 width="382"
 height="578"
