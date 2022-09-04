@@ -1,4 +1,41 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Brain Dump</title><link>https://www.adminbraindump.com/</link><description>Recent content on Brain Dump</description><generator>Hugo -- gohugo.io</generator><language>en-us</language><lastBuildDate>Mon, 29 Aug 2022 16:03:16 -0700</lastBuildDate><atom:link href="https://www.adminbraindump.com/index.xml" rel="self" type="application/rss+xml"/><item><title>Set a Sharepoint Online site to Read-Only or Disabled</title><link>https://www.adminbraindump.com/post/sharepoint-online-site-lock/</link><pubDate>Mon, 29 Aug 2022 16:03:16 -0700</pubDate><guid>https://www.adminbraindump.com/post/sharepoint-online-site-lock/</guid><description>&lt;p>Sharepoint Online (SPO) management tools provided by Microsoft leave something to be desired, to say the least. The admin center web GUI is missing an enormous amount of functionality and the Powershell module is pretty unintuitive. While I don&amp;rsquo;t use a ton of SPO, I recently migrated a site to a different M365 tenant and had the need to set that site to a Read-Only state for a period of time (to ensure we had something to reference in the event someone reported that something was missing) and then disable access to it entirely. Using the SPO Powershell Module, you can quickly and easily change the &lt;code>LockState&lt;/code> attribute of an SPO site.&lt;/p>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Brain Dump</title><link>https://www.adminbraindump.com/</link><description>Recent content on Brain Dump</description><generator>Hugo -- gohugo.io</generator><language>en-us</language><lastBuildDate>Sat, 03 Sep 2022 17:59:38 -0700</lastBuildDate><atom:link href="https://www.adminbraindump.com/index.xml" rel="self" type="application/rss+xml"/><item><title>Change Friendly Name on Exchange Certificate</title><link>https://www.adminbraindump.com/post/change-friendly-name-on-exchange-certificate/</link><pubDate>Sat, 03 Sep 2022 17:59:38 -0700</pubDate><guid>https://www.adminbraindump.com/post/change-friendly-name-on-exchange-certificate/</guid><description>&lt;p>If you use a wildcard certificate on your onprem Exchange server, it is common that the CSR and certificate are generated outside of the Exchange environment and you are importing it into Exchange. If that&amp;rsquo;s the case, you don&amp;rsquo;t get an option for changing the Friendly Name of the certificate during the import process. This can result in Exchange listing multiple certificates with the same on the Certificates page in ECP.
+&lt;img src="https://www.adminbraindump.com/post/change-friendly-name-on-exchange-certificate/dup-cert-names.png"
+width="670"
+height="162"
+srcset="https://www.adminbraindump.com/post/change-friendly-name-on-exchange-certificate/dup-cert-names_hu31a8935816bcba14dd53db42aa029d5d_13451_480x0_resize_box_3.png 480w, https://www.adminbraindump.com/post/change-friendly-name-on-exchange-certificate/dup-cert-names_hu31a8935816bcba14dd53db42aa029d5d_13451_1024x0_resize_box_3.png 1024w"
+loading="lazy"
+class="gallery-image"
+data-flex-grow="413"
+data-flex-basis="992px"
+>&lt;/p>
+&lt;h3 id="changing-friendly-name">Changing friendly name&lt;/h3>
+&lt;p>You would think that Microsoft would provide an intuitive way to change the friendly name of a certificate either within the ECP web GUI or at least through Powershell cmdlet. Unfortunately, &lt;code>Set-ExchangeCertificate&lt;/code> does not exist and ECP does not give any options to modify the friendly name. Luckily, there is a quick and easy (albeit a bit unintutiive) way to change the friendly name of an Exchange certificate by leveraging a cmdlet that you wouldn&amp;rsquo;t expect to permanently change any attribute: &lt;code>Get-ExchangeCertificate&lt;/code>. To do this, just access the FriendlyName attribute of the certificate in question and set/force the name you want in its place; I name my certificates with the Subject Name followed by the expiry year.
+&lt;img src="https://www.adminbraindump.com/post/change-friendly-name-on-exchange-certificate/cert-before-during-after.png"
+width="1132"
+height="196"
+srcset="https://www.adminbraindump.com/post/change-friendly-name-on-exchange-certificate/cert-before-during-after_hu8da577dee7e24dd24a9c65b377b54b7d_47440_480x0_resize_box_3.png 480w, https://www.adminbraindump.com/post/change-friendly-name-on-exchange-certificate/cert-before-during-after_hu8da577dee7e24dd24a9c65b377b54b7d_47440_1024x0_resize_box_3.png 1024w"
+loading="lazy"
+class="gallery-image"
+data-flex-grow="577"
+data-flex-basis="1386px"
+>&lt;/p>
+&lt;h3 id="alternative-method">Alternative method&lt;/h3>
+&lt;p>I have come across a couple scenarios where for some reason the above method didn&amp;rsquo;t work. The command wouldn&amp;rsquo;t output any errors, but the certificate just would not have a different friendly name afterwards. In those few examples, I used a slightly different method to accomplish the same thing. For this, we&amp;rsquo;re effectively doing the same thing but instead of using Exchange, we&amp;rsquo;re just leveraging Powershell&amp;rsquo;s &lt;code>Get-ChildItem&lt;/code> to objectify the certificate we want.
+&lt;img src="https://www.adminbraindump.com/post/change-friendly-name-on-exchange-certificate/cert-gci-before-during-after.png"
+width="1164"
+height="198"
+srcset="https://www.adminbraindump.com/post/change-friendly-name-on-exchange-certificate/cert-gci-before-during-after_hu1e8a97e20e41eb8fec8d87cff1a16171_75431_480x0_resize_box_3.png 480w, https://www.adminbraindump.com/post/change-friendly-name-on-exchange-certificate/cert-gci-before-during-after_hu1e8a97e20e41eb8fec8d87cff1a16171_75431_1024x0_resize_box_3.png 1024w"
+loading="lazy"
+class="gallery-image"
+data-flex-grow="587"
+data-flex-basis="1410px"
+>&lt;/p>
+&lt;p>Keeping clear friendly names will help differentiate certificates no matter how those certificates are being viewed and avoid confusion for others on your team!&lt;/p>
+&lt;h3 id="code">Code&lt;/h3>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-powershell" data-lang="powershell">&lt;span style="display:flex;">&lt;span>(Get-ExchangeCertificate -Thumbprint &lt;span style="color:#e6db74">&amp;#34;&amp;lt;thumbprint&amp;gt;&amp;#34;&lt;/span>).FriendlyName = &lt;span style="color:#e6db74">&amp;#39;*.domain.com_2023&amp;#39;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#or&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>(Get-ChildItem -Path &lt;span style="color:#e6db74">&amp;#34;Cert:\LocalMachine\my\&amp;lt;thumbprint&amp;gt;&amp;#34;&lt;/span>).FriendlyName = &lt;span style="color:#e6db74">&amp;#39;*.domain.com_2023&amp;#39;&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div></description></item><item><title>Set a Sharepoint Online site to Read-Only or Disabled</title><link>https://www.adminbraindump.com/post/sharepoint-online-site-lock/</link><pubDate>Mon, 29 Aug 2022 16:03:16 -0700</pubDate><guid>https://www.adminbraindump.com/post/sharepoint-online-site-lock/</guid><description>&lt;p>Sharepoint Online (SPO) management tools provided by Microsoft leave something to be desired, to say the least. The admin center web GUI is missing an enormous amount of functionality and the Powershell module is pretty unintuitive. While I don&amp;rsquo;t use a ton of SPO, I recently migrated a site to a different M365 tenant and had the need to set that site to a Read-Only state for a period of time (to ensure we had something to reference in the event someone reported that something was missing) and then disable access to it entirely. Using the SPO Powershell Module, you can quickly and easily change the &lt;code>LockState&lt;/code> attribute of an SPO site.&lt;/p>
 &lt;p>First connect to SPO using the administrative URL of your M365 tenant using the &lt;a class="link" href="https://docs.microsoft.com/en-us/powershell/module/sharepoint-online/connect-sposervice?view=sharepoint-ps" target="_blank" rel="noopener"
 >Connect-SPOService&lt;/a> command. The administrtive URL you connect to is always the same format:&lt;br>
 &lt;code>Connect-SPOService -Url https://tenantname-admin.sharepoint.com&lt;/code>&lt;/p>
