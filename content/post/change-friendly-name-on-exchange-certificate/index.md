@@ -7,7 +7,7 @@ tags: [
 ]
 ---
 
-If you use a wildcard certificate on your onprem Exchange server, it is common that the CSR and certificate are generated outside of the Exchange environment and you are importing it into Exchange. If that's the case, you don't get an option for changing the Friendly Name of the certificate during the import process. This can result in Exchange listing multiple certificates with the same on the Certificates page in ECP.
+If you use a wildcard certificate on your onprem Exchange server, it is common that the CSR and certificate are generated outside of the Exchange environment and you are importing it into Exchange. If that's the case, you don't get an option for changing the Friendly Name of the certificate during the import process. This can result in Exchange listing multiple certificates with the same name on the Certificates page in ECP.
 ![](dup-cert-names.png)
 
 ### Changing friendly name
