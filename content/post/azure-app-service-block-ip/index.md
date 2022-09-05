@@ -29,7 +29,7 @@ Add-AzWebAppAccessRestrictionRule -ResourceGroupName "ResourceGroup" -WebAppName
 ```
 
 ## Doing things the old way
-Access the app service in question and click the "Networking" navigation blade on the left.  
+In the Azure web GUI, access the app service in question and click the "Networking" navigation blade on the left.  
 
 Click "Access restriction"  
 ![](access-restriction.png)  
