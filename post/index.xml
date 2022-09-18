@@ -71,6 +71,7 @@ class="gallery-image"
 data-flex-grow="1383"
 data-flex-basis="3320px"
 >&lt;/p>
+&lt;h1 id="usingdecrypting-the-local-file">Using/decrypting the local file&lt;/h1>
 &lt;p>Rather than go into detail as to how this works, there is a &lt;a class="link" href="https://www.pdq.com/blog/secure-password-with-powershell-encrypting-credentials-part-1/" target="_blank" rel="noopener"
 >quick writeup from the folks at PDQ on this topic specifically&lt;/a> that you can read if you&amp;rsquo;re interested. Once the file exists, that it is! It&amp;rsquo;s encrypted by the Windows DP API and decrypting it in scripts (that run as the same user account that encrypted it) is as easy as just &lt;code>Get-Content -Path &amp;lt;path to file&amp;gt; | ConvertTo-SecureString&lt;/code>. As you can see below, if you read the contents of the text file it is just a long string of alphanumeric characters. To make it usable in a script, you just create a credential object using the ClientID and the decrypted Client Secret and use that when connecting to Azure as the Service Principal!&lt;/p>
 &lt;p>&lt;img src="https://adminbraindump.com/post/protect-passwords-in-powershell-scripts/decrypt-client-secret.png"
