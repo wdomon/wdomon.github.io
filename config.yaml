@@ -31,11 +31,11 @@ menu:
           url: https://github.com/wdomon
           params:
                 icon: github
-        - identifier: linkedin
-          name: LinkedIn
-          url: https://www.linkedin.com/in/wes-domon-0102ab80/
-          params:
-                icon: linkedin
+        #- identifier: linkedin
+        #  name: LinkedIn
+        #  url: https://www.linkedin.com/in/wes-domon-0102ab80/
+        #  params:
+        #        icon: linkedin
     main:
         - identifier: home
           name: Home
