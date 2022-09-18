@@ -44,6 +44,8 @@ Encrypting data in a local file is is quite easy and only takes a couple of line
 
 ![](encrypting-data-to-file.png)
 
+# Using/decrypting the local file
+
 Rather than go into detail as to how this works, there is a [quick writeup from the folks at PDQ on this topic specifically](https://www.pdq.com/blog/secure-password-with-powershell-encrypting-credentials-part-1/) that you can read if you're interested. Once the file exists, that it is! It's encrypted by the Windows DP API and decrypting it in scripts (that run as the same user account that encrypted it) is as easy as just `Get-Content -Path <path to file> | ConvertTo-SecureString`. As you can see below, if you read the contents of the text file it is just a long string of alphanumeric characters. To make it usable in a script, you just create a credential object using the ClientID and the decrypted Client Secret and use that when connecting to Azure as the Service Principal!
 
 ![](decrypt-client-secret.png)
