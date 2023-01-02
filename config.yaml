@@ -19,7 +19,9 @@ params:
             - type: search
             - type: tag-cloud
               params:
-                    limit: 10
+                    limit: 15
+        page:
+            - type: toc
     colorScheme:
         toggle: true
         default: dark

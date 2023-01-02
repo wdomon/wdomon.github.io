@@ -28,7 +28,7 @@ Add-AzWebAppAccessRestrictionRule `
 Add-AzWebAppAccessRestrictionRule -ResourceGroupName "ResourceGroup" -WebAppName "AppName" -Name "Ip example rule" -Priority 100 -Action Deny -IpAddress 122.133.144.155/32
 ```
 
-## Doing things the old way
+### Doing things the old way
 In the Azure web GUI, access the app service in question and click the "Networking" navigation blade on the left.  
 
 Click "Access restriction"  
