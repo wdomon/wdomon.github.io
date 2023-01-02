@@ -15,7 +15,7 @@
 &lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;hr>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-powershell" data-lang="powershell">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#Same command one-liner&lt;/span>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Add-AzWebAppAccessRestrictionRule -ResourceGroupName &lt;span style="color:#e6db74">&amp;#34;ResourceGroup&amp;#34;&lt;/span> -WebAppName &lt;span style="color:#e6db74">&amp;#34;AppName&amp;#34;&lt;/span> -Name &lt;span style="color:#e6db74">&amp;#34;Ip example rule&amp;#34;&lt;/span> -Priority &lt;span style="color:#ae81ff">100&lt;/span> -Action Deny -IpAddress &lt;span style="color:#ae81ff">122.133&lt;/span>.144.&lt;span style="color:#ae81ff">155&lt;/span>/&lt;span style="color:#ae81ff">32&lt;/span>
-&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="doing-things-the-old-way">Doing things the old way&lt;/h2>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="doing-things-the-old-way">Doing things the old way&lt;/h3>
 &lt;p>In the Azure web GUI, access the app service in question and click the &amp;ldquo;Networking&amp;rdquo; navigation blade on the left.&lt;/p>
 &lt;p>Click &amp;ldquo;Access restriction&amp;rdquo;&lt;br>
 &lt;img src="https://adminbraindump.com/post/azure-app-service-block-ip/access-restriction.png"
