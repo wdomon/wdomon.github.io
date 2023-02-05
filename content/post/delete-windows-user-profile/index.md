@@ -12,10 +12,11 @@ Whatever the reason you may have for deleting the user profile from a Windows Se
 For my use case, I wanted to cycle through our hundreds of servers to remove this old profile (and a couple others that I knew were floating around out there) from every single one. My first step is to gather a list of just the name of all those servers. Every environment is different but the most generic way to grab all Windows Server names out of Active Directory is by filtering the `Get-ADComputer` cmdlet.
 ```powershell
 $servers = (Get-ADComputer -Filter {operatingSystem -like "*Windows Server*"}).Name
+$username = "username"
 ```
-Once we have all server names we can take advantage of the fact that the `Get-CimInstance` cmdlet's parameter `-ComputerName` accepts an array of strings (which our $server variable from above will be). As a result, we won't need a foreach loop, or to push this out as jobs, it's a simple one-liner pipeline to do the rest:
+Once we have all server names and our target username, we can take advantage of the fact that the `Get-CimInstance` cmdlet's parameter `-ComputerName` accepts an array of strings (which our $server variable from above will be). As a result, we won't need a foreach loop, or to push this out as jobs, it's a simple one-liner pipeline to do the rest:
 ```powershell
 #Replace 'username' below with the name of the target folder in C:\Users
-Get-CimInstance -ComputerName $servers -ClassName Win32_UserProfile | Where-Object {$_.localpath -like "*username*"} | Remove-CimInstance
+Get-CimInstance -ComputerName $servers -ClassName Win32_UserProfile | Where-Object {$_.localpath -like "*$username"} | Remove-CimInstance
 ```
 That's it! This will go through all servers and remove all references to the user profile, including the profile folder, that match that username. In my environment it took less time for this to run through hundreds of servers than it took for a single user profile folder to be deleted in File Explorer, so in this case doing things the proper way also ended up being the easy way. Win-Win!
