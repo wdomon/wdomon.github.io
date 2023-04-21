@@ -165,7 +165,7 @@ data-flex-basis="1386px"
 >&lt;/p>
 &lt;h3 id="alternative-method">Alternative method&lt;/h3>
 &lt;p>I have come across a couple scenarios where for some reason the above method didn&amp;rsquo;t work. The command wouldn&amp;rsquo;t output any errors, but the certificate just would not have a different friendly name afterwards. In those few examples, I used a slightly different method to accomplish the same thing. For this, we&amp;rsquo;re effectively doing the same thing but instead of using Exchange, we&amp;rsquo;re just leveraging Powershell&amp;rsquo;s &lt;code>Get-ChildItem&lt;/code> to objectify the certificate we want.
-&lt;img src="https://adminbraindump.com/post/change-friendly-name-on-exchange-certificate/cert-gci-before-during-after.png"
+#&lt;img src="https://adminbraindump.com/post/change-friendly-name-on-exchange-certificate/cert-gci-before-during-after.png"
 width="1164"
 height="198"
 srcset="https://adminbraindump.com/post/change-friendly-name-on-exchange-certificate/cert-gci-before-during-after_hu1e8a97e20e41eb8fec8d87cff1a16171_75431_480x0_resize_box_3.png 480w, https://adminbraindump.com/post/change-friendly-name-on-exchange-certificate/cert-gci-before-during-after_hu1e8a97e20e41eb8fec8d87cff1a16171_75431_1024x0_resize_box_3.png 1024w"
