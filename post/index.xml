@@ -1,4 +1,123 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Posts on Admin Brain Dump</title><link>https://adminbraindump.com/post/</link><description>Recent content in Posts on Admin Brain Dump</description><generator>Hugo -- gohugo.io</generator><language>en-us</language><lastBuildDate>Tue, 31 Jan 2023 07:57:19 -0700</lastBuildDate><atom:link href="https://adminbraindump.com/post/index.xml" rel="self" type="application/rss+xml"/><item><title>Properly and Fully Delete Windows User Profile</title><link>https://adminbraindump.com/post/delete-windows-user-profile/</link><pubDate>Tue, 31 Jan 2023 07:57:19 -0700</pubDate><guid>https://adminbraindump.com/post/delete-windows-user-profile/</guid><description>&lt;p>Recently, while investigating a &amp;ldquo;Low Free Space on C: Volume&amp;rdquo; alert on one of our servers I took a look at the &lt;code>C:\Users&lt;/code> folder and noticed a user profile folder for a sysadmin that hadn&amp;rsquo;t worked for the company in over 10 years. I mentioned this to a coworker who said, &amp;ldquo;Yeah I used to look at &lt;code>C:\Users&lt;/code> on all the servers and delete that folder if I saw it but I kind of gave up after a while.&amp;rdquo; If you&amp;rsquo;ve tried this you likely have found that it takes Windows quite a while to delete all the system files, etc. inside that profile folder and can often run into weird NTFS permission issues, or the cursed Thumbs.db &amp;ldquo;in use by another program&amp;rdquo; annoyance.&lt;/p>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Posts on Admin Brain Dump</title><link>https://adminbraindump.com/post/</link><description>Recent content in Posts on Admin Brain Dump</description><generator>Hugo -- gohugo.io</generator><language>en-us</language><lastBuildDate>Sun, 27 Aug 2023 09:00:50 -0700</lastBuildDate><atom:link href="https://adminbraindump.com/post/index.xml" rel="self" type="application/rss+xml"/><item><title>Create AzureAD Guest Users with Additional Attributes using MS Graph</title><link>https://adminbraindump.com/post/azuread-guest-users/</link><pubDate>Sun, 27 Aug 2023 09:00:50 -0700</pubDate><guid>https://adminbraindump.com/post/azuread-guest-users/</guid><description>&lt;p>Over the last decade or so, Microsoft has done a terrible job at addressing needs for Mergers and Acquisitions of medium to large businesses. They have provided almost no tooling and the features that exist often fall short of being production worthy in an M&amp;amp;A scenario. In many of these scenarios, there is often a business need to get the staff of a newly acquired company to access the parent company&amp;rsquo;s existing platforms (HRIS, ERP, etc). For this, using AzureAD Guest accounts can often provide this access without having to complete a full identity migration of those users into the parent tenant.&lt;/p>
+&lt;p>AzureAD (aka EntraID) B2B/Guest user accounts are a very powerful and flexible way to grant individuals outside of your primary tenant access to things as if they are within your tenant. A great example of this is Single SignOn (SSO) access to a third party SaaS application that you need contractors, or users from a newly acquired business, to access. Unfortunately (at the time of writing), even using the most modern methods for creating Guest Users like leveraging MS Graph does not allow for many attributes of a user account to be set at the time of creation; even attributes as basic as First Name or Last Name. These attributes are often passed through SSO configurations, like SAML or OIDC, as claims and are required for these Guest Users to be able to authenticate through SSO. Until Microsoft addresses this, the best course of action is to create all of the Guest Accounts and then take another pass through them to apply the necessary attributes. I recently had this scenario play out after my company acquired another and we needed all of their hiring managers and recruiters (about 300 in total) to access our SaaS recruiting platform. In this post, we will go over a script I wrote to handle all of the steps needed to complete this process.&lt;/p>
+&lt;h3 id="prerequisites">Prerequisites&lt;/h3>
+&lt;ul>
+&lt;li>&lt;a class="link" href="https://www.powershellgallery.com/packages/Microsoft.Graph" target="_blank" rel="noopener"
+>Microsoft Graph Powershell Module&lt;/a>&lt;/li>
+&lt;li>AzureAD (EntraID) subscription&lt;/li>
+&lt;li>Graph API permissions for &lt;code>User.Invite.All&lt;/code>,&lt;code>User.ReadWrite.All&lt;/code>, and &lt;code>Directory.ReadWrite.All&lt;/code>&lt;/li>
+&lt;/ul>
+&lt;h3 id="ingest-list-of-users">Ingest list of users&lt;/h3>
+&lt;p>The first thing I had the other company provide me was a CSV that contains the three key pieces of information we needed to for each user: FirstName, LastName, and EmailAddress. When I received it, I noticed that the FirstName was in all caps but for cleanliness&amp;rsquo; sake I didn&amp;rsquo;t want these Guest Users to have names in all caps; we&amp;rsquo;ll address this later in the script. (If you&amp;rsquo;re ever sending data to be used programmatically, please don&amp;rsquo;t be &amp;ldquo;that guy&amp;rdquo;; make sure the formatting is decent)&lt;br>
+&lt;img src="https://adminbraindump.com/post/azuread-guest-users/Import-Csv.png"
+width="418"
+height="295"
+srcset="https://adminbraindump.com/post/azuread-guest-users/Import-Csv_hu1bfac2fee59bedbfa2242c075230fe16_19503_480x0_resize_box_3.png 480w, https://adminbraindump.com/post/azuread-guest-users/Import-Csv_hu1bfac2fee59bedbfa2242c075230fe16_19503_1024x0_resize_box_3.png 1024w"
+loading="lazy"
+class="gallery-image"
+data-flex-grow="141"
+data-flex-basis="340px"
+>&lt;/p>
+&lt;h3 id="connect-to-ms-graph">Connect to MS Graph&lt;/h3>
+&lt;p>Connecting to MS Graph using the Powershell module is pretty straight forward: &lt;code>Connect-MgGraph&lt;/code>. One thing people tend to forget is to identify the permissions ahead of time that you&amp;rsquo;ll need in order to perform the tasks at hand. For this, we will need &lt;code>User.Invite.All&lt;/code>,&lt;code>User.ReadWrite.All&lt;/code>, and &lt;code>Directory.ReadWrite.All&lt;/code>.&lt;/p>
+&lt;p>&lt;img src="https://adminbraindump.com/post/azuread-guest-users/Connect.png"
+width="965"
+height="223"
+srcset="https://adminbraindump.com/post/azuread-guest-users/Connect_hua4fd5b4fe966657a3081ccba570bc695_20988_480x0_resize_box_3.png 480w, https://adminbraindump.com/post/azuread-guest-users/Connect_hua4fd5b4fe966657a3081ccba570bc695_20988_1024x0_resize_box_3.png 1024w"
+loading="lazy"
+alt="Is anyone else tired of these &amp;ldquo;welcome messages&amp;rdquo; in Powershell modules?"
+class="gallery-image"
+data-flex-grow="432"
+data-flex-basis="1038px"
+>&lt;/p>
+&lt;h3 id="declare-variables">Declare variables&lt;/h3>
+&lt;p>For SSO configurations, I always lock down the AzureAD Enterprise App to only allow authentication for users in a particular Security Group. One thing to note here is that Guest Users can ONLY be added to a cloud security group and CANNOT be added to a security group that has been synced up from OnPrem AD via AzureAD Connect. Adding these Guest Users to this cloud group is what grants them the ability within AzureAD to authenticate against the Enterprise App and SSO. There&amp;rsquo;s a few ways to grab this group using &lt;code>Get-MgGroup&lt;/code> but I&amp;rsquo;ve found searching by display name to be the most convenient; in this case the group is &amp;lsquo;ASG_demo_sso_guests.&amp;rsquo; We&amp;rsquo;re setting &lt;code>$i&lt;/code> to 0 now so we can use it as a counter to output the total number of Guest Users created.
+&lt;img src="https://adminbraindump.com/post/azuread-guest-users/variables.png"
+width="1028"
+height="41"
+srcset="https://adminbraindump.com/post/azuread-guest-users/variables_huca88fa3c696cf6b59faf3c0ee83f96fb_10173_480x0_resize_box_3.png 480w, https://adminbraindump.com/post/azuread-guest-users/variables_huca88fa3c696cf6b59faf3c0ee83f96fb_10173_1024x0_resize_box_3.png 1024w"
+loading="lazy"
+class="gallery-image"
+data-flex-grow="2507"
+data-flex-basis="6017px"
+>&lt;/p>
+&lt;h3 id="creating-the-guest-users">Creating the Guest Users&lt;/h3>
+&lt;p>Guest user accounts are created by what MS calls an &amp;ldquo;Invitation.&amp;rdquo; The default behavior when creating these is to send out an email invite that the user interacts with to accept. In most cases, this email causes confusion and generates helpdesk calls so I typically suppress it with &lt;code>-SendInvitationMessage:$false&lt;/code>. As mentioned above, the CSV that was provided had users&amp;rsquo; first names in all caps but ideally users would have the first letter of each name capitalized. To fix this before creating the users, we leverage the &lt;code>ToTitleCase&lt;/code> method of the &lt;code>Get-Culture&lt;/code> cmdlet; this will capitalize the first letter lowercase the rest. I know this works well when location is set to US but I have not tested it outside of that. One nuance of &lt;code>ToTitleCase&lt;/code> is that it assumes anything that is all caps is an acronym and doesn&amp;rsquo;t change any of the casing. Since the first names in our CSV are all caps, we can get around this by converting the names to all lowercase while pulling them into &lt;code>ToTitleCase&lt;/code>. The below foreach loop will confirm that a Guest User does not already exist for the email address then create a Guest User with the email address while converting the casing of the First and Last names to create the DisplayName (backticks used for formatting).
+&lt;img src="https://adminbraindump.com/post/azuread-guest-users/createGuests.png"
+width="1131"
+height="289"
+srcset="https://adminbraindump.com/post/azuread-guest-users/createGuests_huae7dba5444c5130f7bfe0043562192f5_42637_480x0_resize_box_3.png 480w, https://adminbraindump.com/post/azuread-guest-users/createGuests_huae7dba5444c5130f7bfe0043562192f5_42637_1024x0_resize_box_3.png 1024w"
+loading="lazy"
+class="gallery-image"
+data-flex-grow="391"
+data-flex-basis="939px"
+>&lt;/p>
+&lt;h3 id="optional-while-loop">Optional: While Loop&lt;/h3>
+&lt;p>My experience has been that the time it takes for Guest Users to be created and available to make changes to varies pretty widely. I&amp;rsquo;ve seen them be available near-instant and I&amp;rsquo;ve seen them take 5-10 minutes. Personally, I did not include a &lt;code>While&lt;/code> loop in my script to avoid it taking an extremely long time to complete but if you want a single repeatable script for creating Guest Users I would recommend one. As an example, here&amp;rsquo;s one that will check for the existance of the Guest User account but, importantly, give up after 60 seconds.
+&lt;img src="https://adminbraindump.com/post/azuread-guest-users/whileLoop.png"
+width="903"
+height="77"
+srcset="https://adminbraindump.com/post/azuread-guest-users/whileLoop_hu5d22602148849579c6f61240e3b825b6_13271_480x0_resize_box_3.png 480w, https://adminbraindump.com/post/azuread-guest-users/whileLoop_hu5d22602148849579c6f61240e3b825b6_13271_1024x0_resize_box_3.png 1024w"
+loading="lazy"
+class="gallery-image"
+data-flex-grow="1172"
+data-flex-basis="2814px"
+>&lt;/p>
+&lt;h3 id="adding-the-additional-attributes-and-other-changes">Adding the additional attributes and other changes&lt;/h3>
+&lt;p>Now that the Guest Users exist, adding attributes is relatively simple and straight forward. Since we are making multiple changes to every user on this list (setting FirstName, setting LastName, and adding user to the security group), we will make all the changes as part of a single &lt;code>foreach&lt;/code> loop. One thing to note is that while earlier we ensured to only attempt to create a Guest User if one didn&amp;rsquo;t already exist, we want to make these next changes to every Guest User in the CSV, regardless of whether it existed prior. However, we also want to make sure that an output exists for any failures so we are made aware. Granted, since we&amp;rsquo;re using the same CSV there should be no failures, but it&amp;rsquo;s always good to throw in an extra line or two that helps the confidence of the script output.
+&lt;img src="https://adminbraindump.com/post/azuread-guest-users/setAttributes.png"
+width="820"
+height="287"
+srcset="https://adminbraindump.com/post/azuread-guest-users/setAttributes_hu7957aac0f23a7a734130ee797de2219a_40263_480x0_resize_box_3.png 480w, https://adminbraindump.com/post/azuread-guest-users/setAttributes_hu7957aac0f23a7a734130ee797de2219a_40263_1024x0_resize_box_3.png 1024w"
+loading="lazy"
+class="gallery-image"
+data-flex-grow="285"
+data-flex-basis="685px"
+>&lt;/p>
+&lt;h3 id="put-it-all-together">Put it all together&lt;/h3>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-powershell" data-lang="powershell">&lt;span style="display:flex;">&lt;span>$csv = Import-Csv -Path &amp;lt;path to csv&amp;gt;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Connect-MgGraph -Scopes User.Invite.All,User.ReadWrite.All,Directory.ReadWrite.All
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>$group = Get-MgGroup -Search &lt;span style="color:#e6db74">&amp;#34;DisplayName:ASG_demo_sso_guests&amp;#34;&lt;/span> -ConsistencyLevel eventual
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>$i = &lt;span style="color:#ae81ff">0&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">foreach&lt;/span> ($guest &lt;span style="color:#66d9ef">in&lt;/span> $csv) {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> $user = Get-MgUser -Search &lt;span style="color:#e6db74">&amp;#34;mail:&lt;/span>$($guest.EmailAddress)&lt;span style="color:#e6db74">&amp;#34;&lt;/span> -ConsistencyLevel eventual -ea SilentlyContinue
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">if&lt;/span> (!($user)) {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> New-MgInvitation `
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> -InvitedUserEmailAddress $($guest.EmailAddress) `
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> -InviteRedirectUrl &lt;span style="color:#e6db74">&amp;#34;https://portal.office.com&amp;#34;&lt;/span> `
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> -InvitedUserDisplayName (Get-Culture).TextInfo.ToTitleCase(&lt;span style="color:#e6db74">&amp;#34;&lt;/span>$($guest.FirstName.toLower())&lt;span style="color:#e6db74"> &lt;/span>$($guest.LastName.ToLower())&lt;span style="color:#e6db74">&amp;#34;&lt;/span>) `
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> -SendInvitationMessage:$false `
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> | Out-Null
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> $i++
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> Clear-Variable user
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Write-Output &lt;span style="color:#e6db74">&amp;#34;&lt;/span>$i&lt;span style="color:#e6db74"> guest users created&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&amp;lt;# OPTIONAL to be incorporated in the foreach loop
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">while (($null -eq $GuestUser) -and ((Get-Date) -le $date.AddSeconds(60))) {
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e"> $GuestUser = Get-MgUser -Search &amp;#34;mail:$($guest.EmailAddress)&amp;#34; -ConsistencyLevel eventual
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e"> Start-Sleep -Seconds 1
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">}
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">#&amp;gt;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#66d9ef">foreach&lt;/span> ($guest &lt;span style="color:#66d9ef">in&lt;/span> $csv) {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">if&lt;/span> ($user) {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> Clear-Variable user
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> $user = Get-MgUser -Search &lt;span style="color:#e6db74">&amp;#34;mail:&lt;/span>$($guest.EmailAddress)&lt;span style="color:#e6db74">&amp;#34;&lt;/span> -ConsistencyLevel eventual
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#66d9ef">if&lt;/span> ($user) {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> Update-MgUser `
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> -UserId $user.Id `
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> -GivenName (Get-Culture).TextInfo.ToTitleCase($($guest.FirstName.toLower())) `
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> -Surname (Get-Culture).TextInfo.ToTitleCase($($guest.LastName.toLower()))
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> } &lt;span style="color:#66d9ef">else&lt;/span> {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> Write-Output &lt;span style="color:#e6db74">&amp;#34;Unable to find account with email &lt;/span>$($guest.EmailAddress)&lt;span style="color:#e6db74">&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> New-MgGroupMember -GroupId $group.id -DirectoryObjectId $user.id
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div></description></item><item><title>Properly and Fully Delete Windows User Profile</title><link>https://adminbraindump.com/post/delete-windows-user-profile/</link><pubDate>Tue, 31 Jan 2023 07:57:19 -0700</pubDate><guid>https://adminbraindump.com/post/delete-windows-user-profile/</guid><description>&lt;p>Recently, while investigating a &amp;ldquo;Low Free Space on C: Volume&amp;rdquo; alert on one of our servers I took a look at the &lt;code>C:\Users&lt;/code> folder and noticed a user profile folder for a sysadmin that hadn&amp;rsquo;t worked for the company in over 10 years. I mentioned this to a coworker who said, &amp;ldquo;Yeah I used to look at &lt;code>C:\Users&lt;/code> on all the servers and delete that folder if I saw it but I kind of gave up after a while.&amp;rdquo; If you&amp;rsquo;ve tried this you likely have found that it takes Windows quite a while to delete all the system files, etc. inside that profile folder and can often run into weird NTFS permission issues, or the cursed Thumbs.db &amp;ldquo;in use by another program&amp;rdquo; annoyance.&lt;/p>
 &lt;p>Whatever the reason you may have for deleting the user profile from a Windows Server (or workstation), deleting that folder is not even fully removing the user profile from the machine, leaving registry keys and other references to that profile strewn about the OS. The better way to do this is to use Powershell to leverage CIM (Common Information Model) and remove the entire profile, which includes that folder, quickly and easily.&lt;/p>
 &lt;h3 id="nuke-the-profile">Nuke the profile&lt;/h3>
 &lt;p>For my use case, I wanted to cycle through our hundreds of servers to remove this old profile (and a couple others that I knew were floating around out there) from every single one. My first step is to gather a list of just the name of all those servers. Every environment is different but the most generic way to grab all Windows Server names out of Active Directory is by filtering the &lt;code>Get-ADComputer&lt;/code> cmdlet.&lt;/p>
