@@ -20,7 +20,8 @@ AzureAD (aka EntraID) B2B/Guest user accounts are a very powerful and flexible w
 * Graph API permissions for `User.Invite.All`,`User.ReadWrite.All`, and `Directory.ReadWrite.All`
 
 ### Ingest list of users
-The first thing I had the other company provide me was a CSV that contains the three key pieces of information we needed to for each user: FirstName, LastName, and EmailAddress. When I received it, I noticed that the FirstName was in all caps but for cleanliness' sake I didn't want these Guest Users to have names in all caps; we'll address this later in the script. (If you're ever sending data to be used programmatically, please don't be "that guy"; make sure the formatting is decent)  
+The first thing I had the other company provide me was a CSV that contains the three key pieces of information we needed to for each user: FirstName, LastName, and EmailAddress. When I received it, I noticed that the FirstName was in all caps but for cleanliness' sake I didn't want these Guest Users to have names in all caps; we'll address this later in the script. (If you're ever sending data to be used programmatically, please don't be "that guy"; make sure the formatting is decent)
+
 ![](Import-Csv.png)
 
 ### Connect to MS Graph
@@ -30,18 +31,22 @@ Connecting to MS Graph using the Powershell module is pretty straight forward: `
 
 ### Declare variables
 For SSO configurations, I always lock down the AzureAD Enterprise App to only allow authentication for users in a particular Security Group. One thing to note here is that Guest Users can ONLY be added to a cloud security group and CANNOT be added to a security group that has been synced up from OnPrem AD via AzureAD Connect. Adding these Guest Users to this cloud group is what grants them the ability within AzureAD to authenticate against the Enterprise App and SSO. There's a few ways to grab this group using `Get-MgGroup` but I've found searching by display name to be the most convenient; in this case the group is 'ASG_demo_sso_guests.' We're setting `$i` to 0 now so we can use it as a counter to output the total number of Guest Users created.
+
 ![](variables.png)
 
 ### Creating the Guest Users
 Guest user accounts are created by what MS calls an "Invitation." The default behavior when creating these is to send out an email invite that the user interacts with to accept. In most cases, this email causes confusion and generates helpdesk calls so I typically suppress it with `-SendInvitationMessage:$false`. As mentioned above, the CSV that was provided had users' first names in all caps but ideally users would have the first letter of each name capitalized. To fix this before creating the users, we leverage the `ToTitleCase` method of the `Get-Culture` cmdlet; this will capitalize the first letter lowercase the rest. I know this works well when location is set to US but I have not tested it outside of that. One nuance of `ToTitleCase` is that it assumes anything that is all caps is an acronym and doesn't change any of the casing. Since the first names in our CSV are all caps, we can get around this by converting the names to all lowercase while pulling them into `ToTitleCase`. The below foreach loop will confirm that a Guest User does not already exist for the email address then create a Guest User with the email address while converting the casing of the First and Last names to create the DisplayName (backticks used for formatting).
+
 ![](createGuests.png)
 
 ### Optional: While Loop
 My experience has been that the time it takes for Guest Users to be created and available to make changes to varies pretty widely. I've seen them be available near-instant and I've seen them take 5-10 minutes. Personally, I did not include a `While` loop in my script to avoid it taking an extremely long time to complete but if you want a single repeatable script for creating Guest Users I would recommend one. As an example, here's one that will check for the existance of the Guest User account but, importantly, give up after 60 seconds.
+
 ![](whileLoop.png)
 
 ### Adding the additional attributes and other changes
 Now that the Guest Users exist, adding attributes is relatively simple and straight forward. Since we are making multiple changes to every user on this list (setting FirstName, setting LastName, and adding user to the security group), we will make all the changes as part of a single `foreach` loop. One thing to note is that while earlier we ensured to only attempt to create a Guest User if one didn't already exist, we want to make these next changes to every Guest User in the CSV, regardless of whether it existed prior. However, we also want to make sure that an output exists for any failures so we are made aware. Granted, since we're using the same CSV there should be no failures, but it's always good to throw in an extra line or two that helps the confidence of the script output.
+
 ![](setAttributes.png)
 
 ### Put it all together
@@ -83,9 +88,9 @@ foreach ($guest in $csv) {
         -UserId $user.Id `
         -GivenName (Get-Culture).TextInfo.ToTitleCase($($guest.FirstName.toLower())) `
         -Surname (Get-Culture).TextInfo.ToTitleCase($($guest.LastName.toLower()))
+        New-MgGroupMember -GroupId $group.id -DirectoryObjectId $user.id
     } else {
         Write-Output "Unable to find account with email $($guest.EmailAddress)"
     }
-    New-MgGroupMember -GroupId $group.id -DirectoryObjectId $user.id
 }
 ```
