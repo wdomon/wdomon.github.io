@@ -96,6 +96,7 @@ data-flex-basis="685px"
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Write-Output &lt;span style="color:#e6db74">&amp;#34;&lt;/span>$i&lt;span style="color:#e6db74"> guest users created&amp;#34;&lt;/span>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">&amp;lt;# OPTIONAL to be incorporated in the foreach loop
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">$date = Get-Date
 &lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e">while (($null -eq $GuestUser) -and ((Get-Date) -le $date.AddSeconds(60))) {
 &lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e"> $GuestUser = Get-MgUser -Search &amp;#34;mail:$($guest.EmailAddress)&amp;#34; -ConsistencyLevel eventual
 &lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e"> Start-Sleep -Seconds 1
