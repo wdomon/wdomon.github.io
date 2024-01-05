@@ -72,6 +72,7 @@ foreach ($guest in $csv) {
 Write-Output "$i guest users created"
 
 <# OPTIONAL to be incorporated in the foreach loop
+$date = Get-Date
 while (($null -eq $GuestUser) -and ((Get-Date) -le $date.AddSeconds(60))) {
     $GuestUser = Get-MgUser -Search "mail:$($guest.EmailAddress)" -ConsistencyLevel eventual
     Start-Sleep -Seconds 1
