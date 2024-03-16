@@ -11,7 +11,12 @@ tags: [
 ]
 ---
 
-Update 01/10/24: Microsoft currently has a feature called [Multi-tenant Organization (MTO)](https://learn.microsoft.com/en-us/entra/identity/multi-tenant-organizations/multi-tenant-organization-overview) in public preview that manages the creation, enable/disabling, and deletion of Guest accounts between different tenants. Microsoft advertises an improved collaborative experience when working with users from the other organization but, so far in my experience, while the automatic sync/management of Guest accounts is a plus - the collaborative experience is actually worse once MTO is involved.
+Update 01/10/24: Microsoft currently has a feature called [Multi-tenant Organization (MTO)](https://learn.microsoft.com/en-us/entra/identity/multi-tenant-organizations/multi-tenant-organization-overview) in public preview that manages the creation, enable/disabling, and deletion of Guest accounts between different tenants. Microsoft advertises an improved collaborative experience when working with users from the other organization ~~but, so far in my experience, while the automatic sync/management of Guest accounts is a plus - the collaborative experience is actually worse once MTO is involved.~~
+
+Update 03/16/24: While MTO is still in preview, Microsoft has made great strides towards what I would consider a feature that is close to GA-ready. I have now been using MTO to sync roughly 5,000 total users between two tenants and despite some initial rockiness it has been smooth for the better part of 60 days. For end-users to be able to find each other in the GAL has been a widely praised feature and being able to leverage SSO configurations via Enterprise App means to allow users from the other tenant to SSO into a SaaS application now only requires a few minutes of effort rather than configuring SSO from scratch again (or worse, finding that the SaaS vendor only supports a single IdP). At the time of this writing, I would recommend MTO for any M&A scenario where users need to collaborate within MS Teams or access shared SaaS applications.
+
+
+Original post:
 
 Over the last decade or so, Microsoft has done a terrible job at addressing needs for Mergers and Acquisitions of medium to large businesses. They have provided almost no tooling and the features that exist often fall short of being production worthy in an M&A scenario. In many of these scenarios, there is often a business need to get the staff of a newly acquired company to access the parent company's existing platforms (HRIS, ERP, etc). For this, using AzureAD Guest accounts can often provide this access without having to complete a full identity migration of those users into the parent tenant.
 
