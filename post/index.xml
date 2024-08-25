@@ -1,4 +1,195 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Posts on Admin Brain Dump</title><link>https://adminbraindump.com/post/</link><description>Recent content in Posts on Admin Brain Dump</description><generator>Hugo -- gohugo.io</generator><language>en-us</language><lastBuildDate>Sun, 27 Aug 2023 09:00:50 -0700</lastBuildDate><atom:link href="https://adminbraindump.com/post/index.xml" rel="self" type="application/rss+xml"/><item><title>Create AzureAD Guest Users with Additional Attributes using MS Graph</title><link>https://adminbraindump.com/post/azuread-guest-users/</link><pubDate>Sun, 27 Aug 2023 09:00:50 -0700</pubDate><guid>https://adminbraindump.com/post/azuread-guest-users/</guid><description>&lt;h5 id="update-011024">Update 01/10/24&lt;/h5>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Posts on Admin Brain Dump</title><link>https://adminbraindump.com/post/</link><description>Recent content in Posts on Admin Brain Dump</description><generator>Hugo -- gohugo.io</generator><language>en-us</language><lastBuildDate>Sun, 25 Aug 2024 08:15:56 -0700</lastBuildDate><atom:link href="https://adminbraindump.com/post/index.xml" rel="self" type="application/rss+xml"/><item><title>Restrict Graph API Permissions for Exchange Online or Teams/Sharepoint Online</title><link>https://adminbraindump.com/post/restrict-graph-api/</link><pubDate>Sun, 25 Aug 2024 08:15:56 -0700</pubDate><guid>https://adminbraindump.com/post/restrict-graph-api/</guid><description>&lt;p>Graph API permissions via EntraID app registrations have become even more popular over the last couple of years. While they are definitely an upgrade over old school &amp;ldquo;service accounts,&amp;rdquo; granting an app access to an Exchange Online(EXO) mailbox or a Teams/Sharepoint Online(SPO) site using Graph API permissions can result in far more permissions being granted than are needed (or realized).&lt;/p>
+&lt;p>Many 3rd party applications/vendors, and even flows built within your own Power Automate tenant, etc. will request an app registration with a list of Graph API permissions that their app &amp;ldquo;needs.&amp;rdquo; If this app requires the ability to access a single mailbox, for example, they will request &lt;code>Mail.Read&lt;/code> or &lt;code>Mail.ReadWrite&lt;/code> as the application permission they need. However, what some people don&amp;rsquo;t pick up on is that this is actually granting this app permission to access EVERY mailbox in the entire tenant; shared mailboxes, user mailboxes, resource mailboxes, the CEO/CFO&amp;rsquo;s mailbox&amp;hellip; you get the point. Granting &lt;code>Sites.Read.All&lt;/code> or &lt;code>Sites.ReadWrite.All&lt;/code> do the same for every Teams/OneDrive/SPO site as well. Luckily, Microsoft has introduced features in Microsoft Graph that provide more granular control over app access to specific SPO/Teams site collections and Exchange Online mailboxes. This post will walk you through the process of configuring these features to ensure that your applications only have access to the necessary resources.&lt;/p>
+&lt;h3 id="scoping-microsoft-graph-permissions-for-exchange-online-mailboxes">Scoping Microsoft Graph Permissions for Exchange Online Mailboxes&lt;/h3>
+&lt;p>A significant enhancement is the ability to scope Microsoft Graph permissions to specific Exchange Online mailboxes using the Application Access Policy feature. This is particularly useful in scenarios where an app needs to access only a subset of mailboxes within an organization. This feature is actually just a configuration within EXO using the &lt;a class="link" href="https://www.powershellgallery.com/packages/ExchangeOnlineManagement/3.5.1" target="_blank" rel="noopener"
+>ExchangeOnlineManagement&lt;/a> Powershell module and not with MS Graph itself.&lt;/p>
+&lt;h4 id="configure-application-access-policy">Configure Application Access Policy&lt;/h4>
+&lt;ol>
+&lt;li>
+&lt;p>Connect to Exchange Online PowerShell: First, connect to Exchange Online PowerShell. You can use the Azure Cloud Shell or any other preferred method to do this.&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>Identify the App and Security Group: Identify your app’s clientID and either create a new mail-enabled security group or use an existing one; identify the email address of this group. This group will be used to control the app&amp;rsquo;s access to specific mailboxes. You will add the user account for each mailbox the app needs to access as members of the group (including the disabled accounts associated with shared mailboxes).&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>Create an Application Access Policy: Run the following command to create a policy that restricts the app’s access to the mailboxes within the specified security group&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-powershell" data-lang="powershell">&lt;span style="display:flex;">&lt;span>$appId = &amp;lt;insert clientID of app registration&amp;gt;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>$groupId = &amp;lt;insert email address of mail-enabled security group&amp;gt;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>New-ApplicationAccessPolicy -AppId $appId -PolicyScopeGroupId $groupId -AccessRight RestrictAccess -Description &lt;span style="color:#e6db74">&amp;#34;Scopes down appregX to just mailboxes in groupY&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>&lt;strong>NOTE: This often takes 1-2 hours to take effect once created&lt;/strong>&lt;/p>
+&lt;/li>
+&lt;/ol>
+&lt;p>As you can see, the restriction is actually behing handled by Exchange so the app still has the broad permissions that were originally requested but in practice it will get an &amp;ldquo;Access Denied&amp;rdquo; if it tries to access any mailbox that is not in the group. By using this policy, you can ensure that your application only accesses the mailboxes that are explicitly needed, improving your organization’s security and compliance posture.&lt;/p>
+&lt;h3 id="restricting-app-access-to-teamssharepoint-online-site-collections">Restricting App Access to Teams/SharePoint Online Site Collections&lt;/h3>
+&lt;p>As mentioned previously, granting application permissions for SPO/Teams via Microsoft Graph was an all-or-nothing proposition, with apps having access to all site collections within a tenant. However, Microsoft has introduced a new permission called &lt;code>Sites.Selected&lt;/code>, which allows administrators to limit app access to specific site collections. Unlike the access policy outlined above, this is done within MS Graph itself by replacing the requested &lt;code>Sites.Read.All&lt;/code> or &lt;code>Sites.ReadWrite.All&lt;/code> permissions with the &lt;code>Sites.Selected&lt;/code> instead.&lt;/p>
+&lt;h4 id="steps-to-configure-access">Steps to Configure Access:&lt;/h4>
+&lt;p>While technically granting your application access to a particular site collection only requires a single API call, there&amp;rsquo;s a process that you&amp;rsquo;ll need to follow in order to accomplish that call:&lt;/p>
+&lt;ol>
+&lt;li>
+&lt;p>&lt;strong>Assign the &lt;code>Sites.Selected&lt;/code> Permission&lt;/strong>:
+Begin by assigning the &lt;code>Sites.Selected&lt;/code> permission to your application. This can be done in the EntraID app registration portal. By default, this permission does &lt;strong>NOT&lt;/strong> grant access to any site collections.&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>Create/use an app registration that has &lt;code>Sites.FullControl.All&lt;/code> (appregA)&lt;/strong>&lt;/p>
+&lt;ul>
+&lt;li>This will be used to APPLY the permission to the restricted app registration&lt;/li>
+&lt;li>A temporary app registration can be created for this as long as it is deleted afterwards&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>Create/identify an app registration that has Sites.Selected (appregB)&lt;/strong>&lt;/p>
+&lt;ul>
+&lt;li>This will be granted the API permission to the targeted Teams/SPO site(s)&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>API call to output an access token for appregA&lt;/strong>&lt;/p>
+&lt;ul>
+&lt;li>Type: &lt;code>POST&lt;/code>&lt;/li>
+&lt;li>Uri: &lt;code>https://login.microsoftonline.com/&amp;lt;tenantId&amp;gt;/oauth2/v2.0/token&lt;/code>&lt;/li>
+&lt;li>Body
+&lt;ul>
+&lt;li>Grant_Type: &lt;code>client_credentials&lt;/code>&lt;/li>
+&lt;li>Scope: &lt;code>https://graph.microsoft.com/.default&lt;/code>&lt;/li>
+&lt;li>Client_Id: &lt;code>&amp;lt;clientID fo appregA&amp;gt;&lt;/code>&lt;/li>
+&lt;li>Client_Secret: &lt;code>&amp;lt;clientSecret of appregA&amp;gt;&lt;/code>&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>Copy value of &amp;ldquo;access_token&amp;rdquo; in response&lt;/strong>&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>API call to find &amp;ldquo;siteID&amp;rdquo; of Teams/SPO site(s) wanting to allow an app registration to&lt;/strong>&lt;/p>
+&lt;ul>
+&lt;li>Type: &lt;code>GET&lt;/code>&lt;/li>
+&lt;li>Uri: &lt;code>https://graph.microsoft.com/v1.0/sites/uticorp.sharepoint.com:/sites/&amp;lt;displayNameOfSite&amp;gt;&lt;/code>&lt;/li>
+&lt;li>Authorization: &lt;code>&amp;quot;Bearer &amp;lt;access token for appregA&amp;gt;&amp;quot;&lt;/code>&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>Copy middle value of &amp;ldquo;id&amp;rdquo; in response&lt;/strong>&lt;/p>
+&lt;ul>
+&lt;li>&amp;ldquo;id&amp;rdquo; in response will contain a comma-separated string and the siteID is the middle value&lt;/li>
+&lt;li>Example:&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>API call to apply Teams/SPO site permissions to appregB&lt;/strong>&lt;/p>
+&lt;ul>
+&lt;li>Type: &lt;code>POST&lt;/code>&lt;/li>
+&lt;li>Uri: &lt;code>https://graph.microsoft.com/v1.0/sites/&amp;lt;siteID&amp;gt;/permissions&lt;/code>&lt;/li>
+&lt;li>Authorization: &lt;code>&amp;quot;Bearer &amp;lt;access token for appregA&amp;gt;&amp;quot;&lt;/code>&lt;/li>
+&lt;li>Body:
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-text" data-lang="text">&lt;span style="display:flex;">&lt;span>{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &amp;#34;roles&amp;#34;: [&amp;#34;write&amp;#34;],
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &amp;#34;grantedToIdentities&amp;#34;: [{
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &amp;#34;application&amp;#34;: {
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &amp;#34;id&amp;#34;: &amp;#34;&amp;lt;clientID of appregB&amp;gt;&amp;#34;,
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &amp;#34;displayName&amp;#34;: &amp;#34;&amp;lt;DisplayName of appregB&amp;gt;&amp;#34;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> }]
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>Insert the clientID and DisplayName of appregB in the above body and the siteID in the Uri with the ID of the site collection you want to grant access to. Microsoft provides the following roles:
+&lt;table>
+&lt;thead>
+&lt;tr>
+&lt;th>Role Name&lt;/th>
+&lt;th>Description&lt;/th>
+&lt;/tr>
+&lt;/thead>
+&lt;tbody>
+&lt;tr>
+&lt;td>&lt;/td>
+&lt;td>&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>read&lt;/td>
+&lt;td>Read-only&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>write&lt;/td>
+&lt;td>Adds Write and related bits&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>manage&lt;/td>
+&lt;td>Adds Manage Lists / Designer and related bits&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>fullcontrol&lt;/td>
+&lt;td>All permissions&lt;/td>
+&lt;/tr>
+&lt;/tbody>
+&lt;/table>
+&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;/ol>
+&lt;p>If access to more than one site is needed, just call the permissions endpoint for each site and respective role the app registration needs.&lt;/p>
+&lt;p>While obviously this is more cumbersome than granting the originally requested permission, this approach provides a more secure method of managing application permissions, ensuring that apps only interact with specific site collections, thus reducing the risk of unauthorized access.&lt;/p>
+&lt;h3 id="examples">Examples&lt;/h3>
+&lt;p>&lt;img src="https://adminbraindump.com/post/restrict-graph-api/getBearerToken.png"
+width="720"
+height="636"
+srcset="https://adminbraindump.com/post/restrict-graph-api/getBearerToken_hu5458827622032969681.png 480w, https://adminbraindump.com/post/restrict-graph-api/getBearerToken_hu10630132615768919918.png 1024w"
+loading="lazy"
+alt="Get Bearer Token"
+class="gallery-image"
+data-flex-grow="113"
+data-flex-basis="271px"
+>
+&lt;img src="https://adminbraindump.com/post/restrict-graph-api/getSiteID.png"
+width="720"
+height="531"
+srcset="https://adminbraindump.com/post/restrict-graph-api/getSiteID_hu17229586570458206775.png 480w, https://adminbraindump.com/post/restrict-graph-api/getSiteID_hu13577386426811082080.png 1024w"
+loading="lazy"
+alt="Get siteID"
+class="gallery-image"
+data-flex-grow="135"
+data-flex-basis="325px"
+>
+&lt;img src="https://adminbraindump.com/post/restrict-graph-api/emailFailing.png"
+width="1131"
+height="365"
+srcset="https://adminbraindump.com/post/restrict-graph-api/emailFailing_hu1608701126365362989.png 480w, https://adminbraindump.com/post/restrict-graph-api/emailFailing_hu18090683315262391397.png 1024w"
+loading="lazy"
+alt="Email Failing Properly"
+class="gallery-image"
+data-flex-grow="309"
+data-flex-basis="743px"
+>
+&lt;img src="https://adminbraindump.com/post/restrict-graph-api/emailWorking.png"
+width="1081"
+height="551"
+srcset="https://adminbraindump.com/post/restrict-graph-api/emailWorking_hu12642075313533132518.png 480w, https://adminbraindump.com/post/restrict-graph-api/emailWorking_hu17732853269987000793.png 1024w"
+loading="lazy"
+alt="Email Working"
+class="gallery-image"
+data-flex-grow="196"
+data-flex-basis="470px"
+>
+&lt;img src="https://adminbraindump.com/post/restrict-graph-api/teamsFailing.png"
+width="948"
+height="475"
+srcset="https://adminbraindump.com/post/restrict-graph-api/teamsFailing_hu17249025439854996100.png 480w, https://adminbraindump.com/post/restrict-graph-api/teamsFailing_hu9077682590099019477.png 1024w"
+loading="lazy"
+alt="Teams/SPO Failing Properly"
+class="gallery-image"
+data-flex-grow="199"
+data-flex-basis="478px"
+>
+&lt;img src="https://adminbraindump.com/post/restrict-graph-api/teamsWorking.png"
+width="1059"
+height="532"
+srcset="https://adminbraindump.com/post/restrict-graph-api/teamsWorking_hu4582836064697577380.png 480w, https://adminbraindump.com/post/restrict-graph-api/teamsWorking_hu18077073963194081764.png 1024w"
+loading="lazy"
+alt="Teams Working"
+class="gallery-image"
+data-flex-grow="199"
+data-flex-basis="477px"
+>&lt;/p></description></item><item><title>Create AzureAD Guest Users with Additional Attributes using MS Graph</title><link>https://adminbraindump.com/post/azuread-guest-users/</link><pubDate>Sun, 27 Aug 2023 09:00:50 -0700</pubDate><guid>https://adminbraindump.com/post/azuread-guest-users/</guid><description>&lt;h5 id="update-011024">Update 01/10/24&lt;/h5>
 &lt;p>Microsoft currently has a feature called &lt;a class="link" href="https://learn.microsoft.com/en-us/entra/identity/multi-tenant-organizations/multi-tenant-organization-overview" target="_blank" rel="noopener"
 >Multi-tenant Organization (MTO)&lt;/a> in public preview that manages the creation, enable/disabling, and deletion of Guest accounts between different tenants. Microsoft advertises an improved collaborative experience when working with users from the other organization &lt;del>but, so far in my experience, while the automatic sync/management of Guest accounts is a plus - the collaborative experience is actually worse once MTO is involved.&lt;/del>&lt;/p>
 &lt;h5 id="update-031624">Update 03/16/24&lt;/h5>
@@ -18,7 +209,7 @@
 &lt;p>&lt;img src="https://adminbraindump.com/post/azuread-guest-users/Import-Csv.png"
 width="418"
 height="295"
-srcset="https://adminbraindump.com/post/azuread-guest-users/Import-Csv_hu1bfac2fee59bedbfa2242c075230fe16_19503_480x0_resize_box_3.png 480w, https://adminbraindump.com/post/azuread-guest-users/Import-Csv_hu1bfac2fee59bedbfa2242c075230fe16_19503_1024x0_resize_box_3.png 1024w"
+srcset="https://adminbraindump.com/post/azuread-guest-users/Import-Csv_hu2415264789609545984.png 480w, https://adminbraindump.com/post/azuread-guest-users/Import-Csv_hu8417695367970960552.png 1024w"
 loading="lazy"
 class="gallery-image"
 data-flex-grow="141"
@@ -29,7 +220,7 @@ data-flex-basis="340px"
 &lt;p>&lt;img src="https://adminbraindump.com/post/azuread-guest-users/Connect.png"
 width="965"
 height="223"
-srcset="https://adminbraindump.com/post/azuread-guest-users/Connect_hua4fd5b4fe966657a3081ccba570bc695_20988_480x0_resize_box_3.png 480w, https://adminbraindump.com/post/azuread-guest-users/Connect_hua4fd5b4fe966657a3081ccba570bc695_20988_1024x0_resize_box_3.png 1024w"
+srcset="https://adminbraindump.com/post/azuread-guest-users/Connect_hu6212128955751733444.png 480w, https://adminbraindump.com/post/azuread-guest-users/Connect_hu5430135240932876252.png 1024w"
 loading="lazy"
 alt="Is anyone else tired of these &amp;ldquo;welcome messages&amp;rdquo; in Powershell modules?"
 class="gallery-image"
@@ -41,7 +232,7 @@ data-flex-basis="1038px"
 &lt;p>&lt;img src="https://adminbraindump.com/post/azuread-guest-users/variables.png"
 width="1028"
 height="41"
-srcset="https://adminbraindump.com/post/azuread-guest-users/variables_huca88fa3c696cf6b59faf3c0ee83f96fb_10173_480x0_resize_box_3.png 480w, https://adminbraindump.com/post/azuread-guest-users/variables_huca88fa3c696cf6b59faf3c0ee83f96fb_10173_1024x0_resize_box_3.png 1024w"
+srcset="https://adminbraindump.com/post/azuread-guest-users/variables_hu16767548113899453257.png 480w, https://adminbraindump.com/post/azuread-guest-users/variables_hu16478814754036374529.png 1024w"
 loading="lazy"
 class="gallery-image"
 data-flex-grow="2507"
@@ -52,7 +243,7 @@ data-flex-basis="6017px"
 &lt;p>&lt;img src="https://adminbraindump.com/post/azuread-guest-users/createGuests.png"
 width="1131"
 height="289"
-srcset="https://adminbraindump.com/post/azuread-guest-users/createGuests_huae7dba5444c5130f7bfe0043562192f5_42637_480x0_resize_box_3.png 480w, https://adminbraindump.com/post/azuread-guest-users/createGuests_huae7dba5444c5130f7bfe0043562192f5_42637_1024x0_resize_box_3.png 1024w"
+srcset="https://adminbraindump.com/post/azuread-guest-users/createGuests_hu350930896096550809.png 480w, https://adminbraindump.com/post/azuread-guest-users/createGuests_hu8179151544821243949.png 1024w"
 loading="lazy"
 class="gallery-image"
 data-flex-grow="391"
@@ -63,7 +254,7 @@ data-flex-basis="939px"
 &lt;p>&lt;img src="https://adminbraindump.com/post/azuread-guest-users/whileLoop.png"
 width="903"
 height="77"
-srcset="https://adminbraindump.com/post/azuread-guest-users/whileLoop_hu5d22602148849579c6f61240e3b825b6_13271_480x0_resize_box_3.png 480w, https://adminbraindump.com/post/azuread-guest-users/whileLoop_hu5d22602148849579c6f61240e3b825b6_13271_1024x0_resize_box_3.png 1024w"
+srcset="https://adminbraindump.com/post/azuread-guest-users/whileLoop_hu16059215968782484945.png 480w, https://adminbraindump.com/post/azuread-guest-users/whileLoop_hu2654242581504680889.png 1024w"
 loading="lazy"
 class="gallery-image"
 data-flex-grow="1172"
@@ -74,7 +265,7 @@ data-flex-basis="2814px"
 &lt;p>&lt;img src="https://adminbraindump.com/post/azuread-guest-users/setAttributes.png"
 width="820"
 height="287"
-srcset="https://adminbraindump.com/post/azuread-guest-users/setAttributes_hu7957aac0f23a7a734130ee797de2219a_40263_480x0_resize_box_3.png 480w, https://adminbraindump.com/post/azuread-guest-users/setAttributes_hu7957aac0f23a7a734130ee797de2219a_40263_1024x0_resize_box_3.png 1024w"
+srcset="https://adminbraindump.com/post/azuread-guest-users/setAttributes_hu15760581013605393147.png 480w, https://adminbraindump.com/post/azuread-guest-users/setAttributes_hu4543309082533388470.png 1024w"
 loading="lazy"
 class="gallery-image"
 data-flex-grow="285"
@@ -139,7 +330,7 @@ data-flex-basis="685px"
 &lt;img src="https://adminbraindump.com/post/find-created-modified-date-of-active-directory-dns-object/get-psdrive.png"
 width="580"
 height="248"
-srcset="https://adminbraindump.com/post/find-created-modified-date-of-active-directory-dns-object/get-psdrive_hu727a18e7074c7ba58d243b8f9a1158de_41394_480x0_resize_box_3.png 480w, https://adminbraindump.com/post/find-created-modified-date-of-active-directory-dns-object/get-psdrive_hu727a18e7074c7ba58d243b8f9a1158de_41394_1024x0_resize_box_3.png 1024w"
+srcset="https://adminbraindump.com/post/find-created-modified-date-of-active-directory-dns-object/get-psdrive_hu231251180814885746.png 480w, https://adminbraindump.com/post/find-created-modified-date-of-active-directory-dns-object/get-psdrive_hu5633721556932659575.png 1024w"
 loading="lazy"
 class="gallery-image"
 data-flex-grow="233"
@@ -150,7 +341,7 @@ data-flex-basis="561px"
 &lt;img src="https://adminbraindump.com/post/find-created-modified-date-of-active-directory-dns-object/get-psdrive-filesystem.png"
 width="580"
 height="248"
-srcset="https://adminbraindump.com/post/find-created-modified-date-of-active-directory-dns-object/get-psdrive-filesystem_hucc1e3d7e1a88f7edea78e8714d9cb90b_41767_480x0_resize_box_3.png 480w, https://adminbraindump.com/post/find-created-modified-date-of-active-directory-dns-object/get-psdrive-filesystem_hucc1e3d7e1a88f7edea78e8714d9cb90b_41767_1024x0_resize_box_3.png 1024w"
+srcset="https://adminbraindump.com/post/find-created-modified-date-of-active-directory-dns-object/get-psdrive-filesystem_hu12293064959759143855.png 480w, https://adminbraindump.com/post/find-created-modified-date-of-active-directory-dns-object/get-psdrive-filesystem_hu1280003470031731023.png 1024w"
 loading="lazy"
 class="gallery-image"
 data-flex-grow="233"
@@ -160,7 +351,7 @@ data-flex-basis="561px"
 &lt;img src="https://adminbraindump.com/post/find-created-modified-date-of-active-directory-dns-object/where-object.png"
 width="858"
 height="118"
-srcset="https://adminbraindump.com/post/find-created-modified-date-of-active-directory-dns-object/where-object_hub37ac6b6b163a6e6be0e2f9ffbef3ba5_14855_480x0_resize_box_3.png 480w, https://adminbraindump.com/post/find-created-modified-date-of-active-directory-dns-object/where-object_hub37ac6b6b163a6e6be0e2f9ffbef3ba5_14855_1024x0_resize_box_3.png 1024w"
+srcset="https://adminbraindump.com/post/find-created-modified-date-of-active-directory-dns-object/where-object_hu8490985256552420473.png 480w, https://adminbraindump.com/post/find-created-modified-date-of-active-directory-dns-object/where-object_hu5979261814390794063.png 1024w"
 loading="lazy"
 class="gallery-image"
 data-flex-grow="727"
@@ -177,7 +368,7 @@ data-flex-basis="1745px"
 &lt;p>&lt;img src="https://adminbraindump.com/post/improve-powershell-runtimes-using-filter-parameter/filter-measure.png"
 width="962"
 height="297"
-srcset="https://adminbraindump.com/post/improve-powershell-runtimes-using-filter-parameter/filter-measure_huf0af0bf72783c4e74cac86880e588818_90033_480x0_resize_box_3.png 480w, https://adminbraindump.com/post/improve-powershell-runtimes-using-filter-parameter/filter-measure_huf0af0bf72783c4e74cac86880e588818_90033_1024x0_resize_box_3.png 1024w"
+srcset="https://adminbraindump.com/post/improve-powershell-runtimes-using-filter-parameter/filter-measure_hu11506036472792225822.png 480w, https://adminbraindump.com/post/improve-powershell-runtimes-using-filter-parameter/filter-measure_hu6209414031541717591.png 1024w"
 loading="lazy"
 alt="Filter parameter takes roughly half as long as Where-Object"
 class="gallery-image"
@@ -198,7 +389,7 @@ data-flex-basis="777px"
 &lt;p>&lt;img src="https://adminbraindump.com/post/protect-passwords-in-powershell-scripts/create-rg-and-kv.png"
 width="1470"
 height="538"
-srcset="https://adminbraindump.com/post/protect-passwords-in-powershell-scripts/create-rg-and-kv_hufc18eb5fc311b9ab3facb498ceb037c4_69556_480x0_resize_box_3.png 480w, https://adminbraindump.com/post/protect-passwords-in-powershell-scripts/create-rg-and-kv_hufc18eb5fc311b9ab3facb498ceb037c4_69556_1024x0_resize_box_3.png 1024w"
+srcset="https://adminbraindump.com/post/protect-passwords-in-powershell-scripts/create-rg-and-kv_hu3820445918062874528.png 480w, https://adminbraindump.com/post/protect-passwords-in-powershell-scripts/create-rg-and-kv_hu15177147663029245981.png 1024w"
 loading="lazy"
 class="gallery-image"
 data-flex-grow="273"
@@ -210,7 +401,7 @@ data-flex-basis="655px"
 &lt;p>&lt;img src="https://adminbraindump.com/post/protect-passwords-in-powershell-scripts/create-serviceprincipal-and-accesspolicy.png"
 width="1477"
 height="254"
-srcset="https://adminbraindump.com/post/protect-passwords-in-powershell-scripts/create-serviceprincipal-and-accesspolicy_hu06aa05941cd97dce5380dd226ab290a0_33181_480x0_resize_box_3.png 480w, https://adminbraindump.com/post/protect-passwords-in-powershell-scripts/create-serviceprincipal-and-accesspolicy_hu06aa05941cd97dce5380dd226ab290a0_33181_1024x0_resize_box_3.png 1024w"
+srcset="https://adminbraindump.com/post/protect-passwords-in-powershell-scripts/create-serviceprincipal-and-accesspolicy_hu5135643034340222724.png 480w, https://adminbraindump.com/post/protect-passwords-in-powershell-scripts/create-serviceprincipal-and-accesspolicy_hu9232045373104042653.png 1024w"
 loading="lazy"
 class="gallery-image"
 data-flex-grow="581"
@@ -221,7 +412,7 @@ data-flex-basis="1395px"
 &lt;p>&lt;img src="https://adminbraindump.com/post/protect-passwords-in-powershell-scripts/secret-text-attribute.png"
 width="1508"
 height="375"
-srcset="https://adminbraindump.com/post/protect-passwords-in-powershell-scripts/secret-text-attribute_hua0db312c5edc115361bbeb52cc62fb2f_64407_480x0_resize_box_3.png 480w, https://adminbraindump.com/post/protect-passwords-in-powershell-scripts/secret-text-attribute_hua0db312c5edc115361bbeb52cc62fb2f_64407_1024x0_resize_box_3.png 1024w"
+srcset="https://adminbraindump.com/post/protect-passwords-in-powershell-scripts/secret-text-attribute_hu16889591214168014300.png 480w, https://adminbraindump.com/post/protect-passwords-in-powershell-scripts/secret-text-attribute_hu14573753585361021943.png 1024w"
 loading="lazy"
 class="gallery-image"
 data-flex-grow="402"
@@ -232,7 +423,7 @@ data-flex-basis="965px"
 &lt;p>&lt;img src="https://adminbraindump.com/post/protect-passwords-in-powershell-scripts/connect-sp-output-secret.png"
 width="1508"
 height="498"
-srcset="https://adminbraindump.com/post/protect-passwords-in-powershell-scripts/connect-sp-output-secret_hub2e5de5f5f6b043cfc705cea0e393171_97671_480x0_resize_box_3.png 480w, https://adminbraindump.com/post/protect-passwords-in-powershell-scripts/connect-sp-output-secret_hub2e5de5f5f6b043cfc705cea0e393171_97671_1024x0_resize_box_3.png 1024w"
+srcset="https://adminbraindump.com/post/protect-passwords-in-powershell-scripts/connect-sp-output-secret_hu7888832801132241309.png 480w, https://adminbraindump.com/post/protect-passwords-in-powershell-scripts/connect-sp-output-secret_hu12661364918043197875.png 1024w"
 loading="lazy"
 class="gallery-image"
 data-flex-grow="302"
@@ -250,7 +441,7 @@ data-flex-basis="726px"
 &lt;p>&lt;img src="https://adminbraindump.com/post/protect-passwords-in-powershell-scripts/encrypting-data-to-file.png"
 width="1508"
 height="109"
-srcset="https://adminbraindump.com/post/protect-passwords-in-powershell-scripts/encrypting-data-to-file_hu58f334bd0f001825cd071487ffb58d42_13665_480x0_resize_box_3.png 480w, https://adminbraindump.com/post/protect-passwords-in-powershell-scripts/encrypting-data-to-file_hu58f334bd0f001825cd071487ffb58d42_13665_1024x0_resize_box_3.png 1024w"
+srcset="https://adminbraindump.com/post/protect-passwords-in-powershell-scripts/encrypting-data-to-file_hu7558720754078577762.png 480w, https://adminbraindump.com/post/protect-passwords-in-powershell-scripts/encrypting-data-to-file_hu8047527722366696499.png 1024w"
 loading="lazy"
 class="gallery-image"
 data-flex-grow="1383"
@@ -263,7 +454,7 @@ data-flex-basis="3320px"
 &lt;p>&lt;img src="https://adminbraindump.com/post/protect-passwords-in-powershell-scripts/decrypt-client-secret.png"
 width="1498"
 height="590"
-srcset="https://adminbraindump.com/post/protect-passwords-in-powershell-scripts/decrypt-client-secret_hu9a8f5d65ab2c2f1bac8722409404f5bd_116037_480x0_resize_box_3.png 480w, https://adminbraindump.com/post/protect-passwords-in-powershell-scripts/decrypt-client-secret_hu9a8f5d65ab2c2f1bac8722409404f5bd_116037_1024x0_resize_box_3.png 1024w"
+srcset="https://adminbraindump.com/post/protect-passwords-in-powershell-scripts/decrypt-client-secret_hu5562500267296715362.png 480w, https://adminbraindump.com/post/protect-passwords-in-powershell-scripts/decrypt-client-secret_hu1198030944296372447.png 1024w"
 loading="lazy"
 class="gallery-image"
 data-flex-grow="253"
@@ -272,7 +463,7 @@ data-flex-basis="609px"
 &lt;img src="https://adminbraindump.com/post/change-friendly-name-on-exchange-certificate/dup-cert-names.png"
 width="670"
 height="162"
-srcset="https://adminbraindump.com/post/change-friendly-name-on-exchange-certificate/dup-cert-names_hu31a8935816bcba14dd53db42aa029d5d_13451_480x0_resize_box_3.png 480w, https://adminbraindump.com/post/change-friendly-name-on-exchange-certificate/dup-cert-names_hu31a8935816bcba14dd53db42aa029d5d_13451_1024x0_resize_box_3.png 1024w"
+srcset="https://adminbraindump.com/post/change-friendly-name-on-exchange-certificate/dup-cert-names_hu16930032222331123481.png 480w, https://adminbraindump.com/post/change-friendly-name-on-exchange-certificate/dup-cert-names_hu980941343324211241.png 1024w"
 loading="lazy"
 class="gallery-image"
 data-flex-grow="413"
@@ -283,7 +474,7 @@ data-flex-basis="992px"
 &lt;img src="https://adminbraindump.com/post/change-friendly-name-on-exchange-certificate/cert-before-during-after.png"
 width="1132"
 height="196"
-srcset="https://adminbraindump.com/post/change-friendly-name-on-exchange-certificate/cert-before-during-after_hu8da577dee7e24dd24a9c65b377b54b7d_47440_480x0_resize_box_3.png 480w, https://adminbraindump.com/post/change-friendly-name-on-exchange-certificate/cert-before-during-after_hu8da577dee7e24dd24a9c65b377b54b7d_47440_1024x0_resize_box_3.png 1024w"
+srcset="https://adminbraindump.com/post/change-friendly-name-on-exchange-certificate/cert-before-during-after_hu17889878971331820272.png 480w, https://adminbraindump.com/post/change-friendly-name-on-exchange-certificate/cert-before-during-after_hu1357510046159153746.png 1024w"
 loading="lazy"
 class="gallery-image"
 data-flex-grow="577"
@@ -294,7 +485,7 @@ data-flex-basis="1386px"
 #&lt;img src="https://adminbraindump.com/post/change-friendly-name-on-exchange-certificate/cert-gci-before-during-after.png"
 width="1164"
 height="198"
-srcset="https://adminbraindump.com/post/change-friendly-name-on-exchange-certificate/cert-gci-before-during-after_hu6ad57606997f1dda65f0c37f6e6ff6da_69918_480x0_resize_box_3.png 480w, https://adminbraindump.com/post/change-friendly-name-on-exchange-certificate/cert-gci-before-during-after_hu6ad57606997f1dda65f0c37f6e6ff6da_69918_1024x0_resize_box_3.png 1024w"
+srcset="https://adminbraindump.com/post/change-friendly-name-on-exchange-certificate/cert-gci-before-during-after_hu13921206816634904164.png 480w, https://adminbraindump.com/post/change-friendly-name-on-exchange-certificate/cert-gci-before-during-after_hu4829465532004542034.png 1024w"
 loading="lazy"
 class="gallery-image"
 data-flex-grow="587"
@@ -312,7 +503,7 @@ data-flex-basis="1410px"
 &lt;p>&lt;img src="https://adminbraindump.com/post/sharepoint-online-site-lock/spo-connect.png"
 width="885"
 height="383"
-srcset="https://adminbraindump.com/post/sharepoint-online-site-lock/spo-connect_huc44afd70925cd8ce2870cdc88ba3cc18_49211_480x0_resize_box_3.png 480w, https://adminbraindump.com/post/sharepoint-online-site-lock/spo-connect_huc44afd70925cd8ce2870cdc88ba3cc18_49211_1024x0_resize_box_3.png 1024w"
+srcset="https://adminbraindump.com/post/sharepoint-online-site-lock/spo-connect_hu15503644576939382411.png 480w, https://adminbraindump.com/post/sharepoint-online-site-lock/spo-connect_hu16741895878655219951.png 1024w"
 loading="lazy"
 class="gallery-image"
 data-flex-grow="231"
@@ -332,7 +523,7 @@ data-flex-basis="554px"
 &lt;p>&lt;img src="https://adminbraindump.com/post/hugo-new-post/hugo-new-post.png"
 width="806"
 height="161"
-srcset="https://adminbraindump.com/post/hugo-new-post/hugo-new-post_hu37cb35cc190574a2b05d30e3d9944e31_9913_480x0_resize_box_3.png 480w, https://adminbraindump.com/post/hugo-new-post/hugo-new-post_hu37cb35cc190574a2b05d30e3d9944e31_9913_1024x0_resize_box_3.png 1024w"
+srcset="https://adminbraindump.com/post/hugo-new-post/hugo-new-post_hu16806487719723948521.png 480w, https://adminbraindump.com/post/hugo-new-post/hugo-new-post_hu417207705525064080.png 1024w"
 loading="lazy"
 class="gallery-image"
 data-flex-grow="500"
@@ -342,7 +533,7 @@ data-flex-basis="1201px"
 &lt;p>&lt;img src="https://adminbraindump.com/post/hugo-new-post/hugo-new-post-commit.png"
 width="1639"
 height="1060"
-srcset="https://adminbraindump.com/post/hugo-new-post/hugo-new-post-commit_hua1bf7a15b475eb4a82942c61d1ee3214_93374_480x0_resize_box_3.png 480w, https://adminbraindump.com/post/hugo-new-post/hugo-new-post-commit_hua1bf7a15b475eb4a82942c61d1ee3214_93374_1024x0_resize_box_3.png 1024w"
+srcset="https://adminbraindump.com/post/hugo-new-post/hugo-new-post-commit_hu12814736256854256558.png 480w, https://adminbraindump.com/post/hugo-new-post/hugo-new-post-commit_hu15667618352949983893.png 1024w"
 loading="lazy"
 class="gallery-image"
 data-flex-grow="154"
@@ -370,7 +561,7 @@ data-flex-basis="371px"
 &lt;img src="https://adminbraindump.com/post/azure-app-service-block-ip/access-restriction.png"
 width="377"
 height="315"
-srcset="https://adminbraindump.com/post/azure-app-service-block-ip/access-restriction_huc5458e8fa0d984c06e0b6dd85396afe8_9546_480x0_resize_box_3.png 480w, https://adminbraindump.com/post/azure-app-service-block-ip/access-restriction_huc5458e8fa0d984c06e0b6dd85396afe8_9546_1024x0_resize_box_3.png 1024w"
+srcset="https://adminbraindump.com/post/azure-app-service-block-ip/access-restriction_hu11336617122917741774.png 480w, https://adminbraindump.com/post/azure-app-service-block-ip/access-restriction_hu14632160434427123076.png 1024w"
 loading="lazy"
 class="gallery-image"
 data-flex-grow="119"
@@ -380,7 +571,7 @@ data-flex-basis="287px"
 &lt;img src="https://adminbraindump.com/post/azure-app-service-block-ip/add-rule.png"
 width="349"
 height="488"
-srcset="https://adminbraindump.com/post/azure-app-service-block-ip/add-rule_hu2a5b323919173bf9fb75804bdea3480e_15049_480x0_resize_box_3.png 480w, https://adminbraindump.com/post/azure-app-service-block-ip/add-rule_hu2a5b323919173bf9fb75804bdea3480e_15049_1024x0_resize_box_3.png 1024w"
+srcset="https://adminbraindump.com/post/azure-app-service-block-ip/add-rule_hu17050335760235723382.png 480w, https://adminbraindump.com/post/azure-app-service-block-ip/add-rule_hu12700498886622059684.png 1024w"
 loading="lazy"
 class="gallery-image"
 data-flex-grow="71"
@@ -390,7 +581,7 @@ data-flex-basis="171px"
 &lt;img src="https://adminbraindump.com/post/azure-app-service-block-ip/rule-settings.png"
 width="382"
 height="578"
-srcset="https://adminbraindump.com/post/azure-app-service-block-ip/rule-settings_hu2aeb3e649404f1abf7bafd98bfddec8c_14047_480x0_resize_box_3.png 480w, https://adminbraindump.com/post/azure-app-service-block-ip/rule-settings_hu2aeb3e649404f1abf7bafd98bfddec8c_14047_1024x0_resize_box_3.png 1024w"
+srcset="https://adminbraindump.com/post/azure-app-service-block-ip/rule-settings_hu11273506513837982364.png 480w, https://adminbraindump.com/post/azure-app-service-block-ip/rule-settings_hu2088749393123680557.png 1024w"
 loading="lazy"
 class="gallery-image"
 data-flex-grow="66"
