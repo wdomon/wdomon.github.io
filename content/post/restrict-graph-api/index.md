@@ -1,8 +1,12 @@
 ---
 title: "Restrict Graph API Permissions for Exchange Online or Teams/Sharepoint Online"
 date: 2024-08-25T08:15:56-07:00
-draft: false
 toc: false
+tags: [
+   "EntraID"
+   "MS Graph"
+   "Security"
+]
 ---
 
 Graph API permissions via EntraID app registrations have become even more popular over the last couple of years. While they are definitely an upgrade over old school "service accounts," granting an app access to an Exchange Online(EXO) mailbox or a Teams/Sharepoint Online(SPO) site using Graph API permissions can result in far more permissions being granted than are needed (or realized).
