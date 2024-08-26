@@ -1,10 +1,10 @@
 ---
-title: "Create AzureAD Guest Users with Additional Attributes using MS Graph"
+title: "Create EntraID (AzureAD) Guest Users with Additional Attributes using MS Graph"
 date: 2023-08-27T09:00:50-07:00
 draft: false
 toc: false
 tags: [
-    AzureAD,
+    EntraID,
     SSO,
     Security,
     MS Graph
@@ -19,13 +19,13 @@ While MTO is still in preview, Microsoft has made great strides towards what I w
 
 
 ## Original post
-Over the last decade or so, Microsoft has done a terrible job at addressing needs for Mergers and Acquisitions of medium to large businesses. They have provided almost no tooling and the features that exist often fall short of being production worthy in an M&A scenario. In many of these scenarios, there is often a business need to get the staff of a newly acquired company to access the parent company's existing platforms (HRIS, ERP, etc). For this, using AzureAD Guest accounts can often provide this access without having to complete a full identity migration of those users into the parent tenant.
+Over the last decade or so, Microsoft has done a terrible job at addressing needs for Mergers and Acquisitions of medium to large businesses. They have provided almost no tooling and the features that exist often fall short of being production worthy in an M&A scenario. In many of these scenarios, there is often a business need to get the staff of a newly acquired company to access the parent company's existing platforms (HRIS, ERP, etc). For this, using EntraID (AzureAD) Guest accounts can often provide this access without having to complete a full identity migration of those users into the parent tenant.
 
-AzureAD (aka EntraID) B2B/Guest user accounts are a very powerful and flexible way to grant individuals outside of your primary tenant access to things as if they are within your tenant. A great example of this is Single SignOn (SSO) access to a third party SaaS application that you need contractors, or users from a newly acquired business, to access. Unfortunately (at the time of writing), even using the most modern methods for creating Guest Users like leveraging MS Graph does not allow for many attributes of a user account to be set at the time of creation; even attributes as basic as First Name or Last Name. These attributes are often passed through SSO configurations, like SAML or OIDC, as claims and are required for these Guest Users to be able to authenticate through SSO. Until Microsoft addresses this, the best course of action is to create all of the Guest Accounts and then take another pass through them to apply the necessary attributes. I recently had this scenario play out after my company acquired another and we needed all of their hiring managers and recruiters (about 300 in total) to access our SaaS recruiting platform. In this post, we will go over a script I wrote to handle all of the steps needed to complete this process.
+EntraID B2B/Guest user accounts are a very powerful and flexible way to grant individuals outside of your primary tenant access to things as if they are within your tenant. A great example of this is Single SignOn (SSO) access to a third party SaaS application that you need contractors, or users from a newly acquired business, to access. Unfortunately (at the time of writing), even using the most modern methods for creating Guest Users like leveraging MS Graph does not allow for many attributes of a user account to be set at the time of creation; even attributes as basic as First Name or Last Name. These attributes are often passed through SSO configurations, like SAML or OIDC, as claims and are required for these Guest Users to be able to authenticate through SSO. Until Microsoft addresses this, the best course of action is to create all of the Guest Accounts and then take another pass through them to apply the necessary attributes. I recently had this scenario play out after my company acquired another and we needed all of their hiring managers and recruiters (about 300 in total) to access our SaaS recruiting platform. In this post, we will go over a script I wrote to handle all of the steps needed to complete this process.
 
 ### Prerequisites
 * [Microsoft Graph Powershell Module](https://www.powershellgallery.com/packages/Microsoft.Graph)
-* AzureAD (EntraID) subscription
+* EntraID subscription
 * Graph API permissions for `User.Invite.All`,`User.ReadWrite.All`, and `Directory.ReadWrite.All`
 
 ### Ingest list of users
@@ -39,7 +39,7 @@ Connecting to MS Graph using the Powershell module is pretty straight forward: `
 ![Is anyone else tired of these "welcome messages" in Powershell modules?](Connect.png)
 
 ### Declare variables
-For SSO configurations, I always lock down the AzureAD Enterprise App to only allow authentication for users in a particular Security Group. One thing to note here is that Guest Users can ONLY be added to a cloud security group and CANNOT be added to a security group that has been synced up from OnPrem AD via AzureAD Connect. Adding these Guest Users to this cloud group is what grants them the ability within AzureAD to authenticate against the Enterprise App and SSO. There's a few ways to grab this group using `Get-MgGroup` but I've found searching by display name to be the most convenient; in this case the group is 'ASG_demo_sso_guests.' We're setting `$i` to 0 now so we can use it as a counter to output the total number of Guest Users created.
+For SSO configurations, I always lock down the EntraID Enterprise App to only allow authentication for users in a particular Security Group. One thing to note here is that Guest Users can ONLY be added to a cloud security group and CANNOT be added to a security group that has been synced up from OnPrem AD via EntraID Connect. Adding these Guest Users to this cloud group is what grants them the ability within EntraID to authenticate against the Enterprise App and SSO. There's a few ways to grab this group using `Get-MgGroup` but I've found searching by display name to be the most convenient; in this case the group is 'ASG_demo_sso_guests.' We're setting `$i` to 0 now so we can use it as a counter to output the total number of Guest Users created.
 
 ![](variables.png)
 

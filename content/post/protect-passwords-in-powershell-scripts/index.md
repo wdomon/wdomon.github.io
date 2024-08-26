@@ -13,7 +13,7 @@ In light of the recent news that [Uber was hacked](https://arstechnica.com/infor
 * [Azure Az Powershell Module](https://learn.microsoft.com/en-us/powershell/azure/install-az-ps?view=azps-8.3.0)
 * Azure subscription
 * Access to create Azure KeyVault and grant access controls to it
-* Access to create AzureAD Service Principals (App registration)
+* Access to create EntraID (AzureAD) Service Principals (App registration)
 
 ### Store the actual secrets in Azure KeyVault
 The actual usernames/passwords needed by the script to perform operations will be stored in Azure KeyVault. This allows for granular/RBAC permissions to be granted to secrets within Azure as well as a way to separate the credentials so scripts do not have access to more than they need. Anytime you are creating a new workload, function, group of tasks, etc. I recommend to put them in their own resource group. This helps organize things but also helps with applying specific Azure Policy to specific resources. In this example, I create a new resource group and then a new KeyVault to be used for these secrets.
