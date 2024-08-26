@@ -3,8 +3,8 @@ title: "Restrict Graph API Permissions for Exchange Online or Teams/Sharepoint O
 date: 2024-08-25T08:15:56-07:00
 toc: false
 tags: [
-   EntraID
-   MS Graph
+   EntraID,
+   MS Graph,
    Security
 ]
 ---
