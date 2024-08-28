@@ -16,7 +16,7 @@ You would think that Microsoft would provide an intuitive way to change the frie
 
 ### Alternative method
 I have come across a couple scenarios where for some reason the above method didn't work. The command wouldn't output any errors, but the certificate just would not have a different friendly name afterwards. In those few examples, I used a slightly different method to accomplish the same thing. For this, we're effectively doing the same thing but instead of using Exchange, we're just leveraging Powershell's `Get-ChildItem` to objectify the certificate we want.
-#![](cert-gci-before-during-after.png)
+![](cert-gci-before-during-after.png)
 
 Keeping clear friendly names will help differentiate certificates no matter how those certificates are being viewed and avoid confusion for others on your team!
 
